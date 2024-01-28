@@ -8,4 +8,8 @@ public interface ShelterService {
 
 
     void sendMessage(Long chatId, String messageText);
+
+    void sendMenuButton(Long chatId, String messageText);
+
+    void sendButtonsOfStep0(Long chatId, String messageText);
 }

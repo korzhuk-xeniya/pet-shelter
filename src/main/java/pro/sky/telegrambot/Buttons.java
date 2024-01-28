@@ -8,10 +8,15 @@ import com.pengrad.telegrambot.model.request.InlineKeyboardMarkup;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+
 @Component
 public class Buttons {
-
-    public List<InlineKeyboardMarkup> buttonsOfStart() {
+    public InlineKeyboardMarkup buttonMenu() {
+        InlineKeyboardButton menuButton = new InlineKeyboardButton("Меню");
+        menuButton.callbackData("Меню");
+        return new InlineKeyboardMarkup(new InlineKeyboardButton[]{menuButton});
+    }
+    public InlineKeyboardMarkup buttonsOfStart() {
         InlineKeyboardButton checkInfoButton = new InlineKeyboardButton("Информация о приюте");
         InlineKeyboardButton callVolunteerButton = new InlineKeyboardButton("Позвать волонтера");
         InlineKeyboardButton getReportAboutPet = new InlineKeyboardButton("Прислать отчет о питомце");
@@ -22,18 +27,12 @@ public class Buttons {
         getReportAboutPet.callbackData("Прислать отчет о питомце");
         howGetPet.callbackData("Как взять животное из приюта?");
         toStart.callbackData("В начало");
-//        InlineKeyboardMarkup keyboardMarkup = new InlineKeyboardMarkup();
-//        List<List<InlineKeyboardButton>> rowsInLine = List.of(List.of(checkInfoButton), List.of(callVolunteerButton),
-//                List.of(getReportAboutPet), List.of(howGetPet),List.of(toStart));
-//
-//        keyboardMarkup.keyboard(rowsInLine);
-        //                new InlineKeyboardButton[]{
-//                        new InlineKeyboardButton("url").url("www.google.com"),
-//                        new InlineKeyboardButton("callback_data").callbackData("callback_data"),
-//                        new InlineKeyboardButton("Switch!").switchInlineQuery("switch_inline_query")
 
-        return new InlineKeyboardMarkup(checkInfoButton, callVolunteerButton,
-                getReportAboutPet, howGetPet, toStart);
+        return new InlineKeyboardMarkup(new InlineKeyboardButton[]{checkInfoButton},
+                new InlineKeyboardButton[]{callVolunteerButton},
+                new InlineKeyboardButton[]{getReportAboutPet},
+                new InlineKeyboardButton[]{howGetPet},
+                new InlineKeyboardButton[]{toStart});
     }
 //    public InlineKeyboardMarkup takeAnimalButton() {
 //        InlineKeyboardButton datingRulesButton = new InlineKeyboardButton("Правила знакомства");

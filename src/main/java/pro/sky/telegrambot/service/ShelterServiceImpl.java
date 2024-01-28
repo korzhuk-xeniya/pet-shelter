@@ -34,33 +34,94 @@ public class ShelterServiceImpl implements ShelterService {
         }
         Long chatId = update.message().chat().id();
         String message = update.message().text();
+        Long userId = update.message().from().id();
+        String userName = update.message().from().firstName();
+
         if (message == null) {
             sendMessage(chatId, "для начала работы, отправь /start");
             return;
         }
         if (message.equals("/start")) {
-            sendButtonsOfStep0(chatId, " Добро пожаловать в PetShelterBot, "
+            sendMenuButton(chatId, " Добро пожаловать в PetShelterBot, "
                     + update.message().from().firstName() + "! Я помогаю взаимодействовать с приютами для животных!");
-
-
-
-//                String messageText = " Выберите приют который Вас интересует:";new Buttons().
-//                changeMessage(messageId, chatId, messageText, .selectionAnimalButtons());
-//            ;
-
-
         }
-    }
+//        if (update.callbackQuery() != null) {
+//            chatId = update.callbackQuery().message().chat().id();
+//            userId = update.callbackQuery().from().id();
+//            userName = update.callbackQuery().from().firstName();
+//            message =update.callbackQuery().message().text();
+//            String receivedMessage = update.callbackQuery().data();
 
-   @Override
-   public void sendMessage(Long chatId, String messageText) {
+//            switch (receivedMessage) {
+//                //Cтартовый блок
+//                case "Меню" -> {
+//                    sendButtonsOfStep0(chatId, message);
+//                    break;
+//
+//                }
+                //                блок определения запроса
+//                case "В начало" -> {
+//                    sendMenuButton(chatId,message);
+//                    break;
+//                case "Как взять животное из приюта?" -> takeAnimalSelection(messageId, chatId);
+//                case "Информация о приюте" -> shelterInformationSelection(messageId, chatId);
+//                case "Позвать волонтера" -> callAVolunteer(update);
+//                case "Прислать отчет о питомце" -> petReportSelection(messageId, chatId);
+
+
+//                //блок “Прислать отчет о питомце”
+//                case "Форма ежедневного отчета" -> {
+//                    takeDailyReportFormPhoto(chatId);
+//                    photoCheckButton = true; // Устанавливаем флаг в true после нажатия кнопки
+//                }
+//
+//                //Блок "Информация о приюте"
+//                case "Информация о приюте для кошек" -> aboutCatShelterSelection(messageId, chatId);
+//                case "Расписание работы приюта для кошек" -> catShelterWorkingHoursSelection(messageId, chatId);
+//                case "Контакты охраны приюта для кошек" -> catShelterSecurityContactSelection(messageId, chatId);
+//                case "Информация о приюте для собак" -> aboutDogShelterSelection(messageId, chatId);
+//                case "Расписание работы приюта для собак" -> dogShelterWorkingHoursSelection(messageId, chatId);
+//                case "Контакты охраны приюта для собак" -> dogShelterSecurityContactSelection(messageId, chatId);
+//                case "Общие правила поведения" -> safetyRecommendationsSelection(messageId, chatId);
+//                case "Запись ваших контактов", "Запись контактов" -> recordingContactsSelection(messageId, chatId);
+//
+//                //блок “Как взять животное из приюта”
+//                case "Правила знакомства" -> datingRulesSelection(messageId, chatId);
+//                case "Список документов" -> documentsSelection(messageId, chatId);
+//                case "Рекомендации по транспортировке" -> transportationSelection(messageId, chatId);
+//                case "Обустройство котенка" -> KittenArrangementSelection(messageId, chatId);
+//                case "Обустройство щенка" -> puppyArrangementSelection(messageId, chatId);
+//                case "Обустройство для взрослого кота" -> arrangementAdultSelectionCat(messageId, chatId);
+//                case "Обустройство для взрослой собаки" -> arrangementAdultSelectionDog(messageId, chatId);
+//                case "Обустройство для ограниченного" -> arrangementLimitedSelection(messageId, chatId);
+//                case "Cписок причин" -> listReasonsSelection(messageId, chatId);
+                }
+//            }
+
+
+
+
+
+
+    @Override
+    public void sendMessage(Long chatId, String messageText) {
         SendMessage sendMessage = new SendMessage(chatId, messageText);
         telegramBot.execute(sendMessage);
     }
-    public  void sendButtonsOfStep0(Long chatId, String messageText) {
+    @Override
+    public void sendMenuButton(Long chatId, String messageText) {
+        SendMessage sendMessage = new SendMessage(chatId, messageText);
+        sendMessage.replyMarkup(buttons.buttonMenu());
+        telegramBot.execute(sendMessage);
+    }
+    @Override
+    public void sendButtonsOfStep0(Long chatId, String messageText) {
         SendMessage sendMessage = new SendMessage(chatId, messageText);
         sendMessage.replyMarkup(buttons.buttonsOfStart());
         telegramBot.execute(sendMessage);
     }
 
+
 }
+
+
