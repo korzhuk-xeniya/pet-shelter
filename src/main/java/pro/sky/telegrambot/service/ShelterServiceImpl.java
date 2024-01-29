@@ -2,12 +2,15 @@ package pro.sky.telegrambot.service;
 
 import com.pengrad.telegrambot.TelegramBot;
 import com.pengrad.telegrambot.model.Update;
+import com.pengrad.telegrambot.model.request.InlineKeyboardMarkup;
+import com.pengrad.telegrambot.request.EditMessageText;
 import com.pengrad.telegrambot.request.SendMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import pro.sky.telegrambot.Buttons;
 import pro.sky.telegrambot.repository.ShelterRepository;
+
 
 //import static jdk.internal.joptsimple.internal.Messages.message;
 
@@ -30,38 +33,47 @@ public class ShelterServiceImpl implements ShelterService {
 
         if (update.message() == null) {
             logger.info("пользователь отправил пустое сообщение");
-            return;
+            return ;
         }
         Long chatId = update.message().chat().id();
         String message = update.message().text();
         Long userId = update.message().from().id();
         String userName = update.message().from().firstName();
+        int messageId = update.message().messageId();
 
         if (message == null) {
             sendMessage(chatId, "для начала работы, отправь /start");
-            return;
+            return ;
         }
         if (message.equals("/start")) {
             sendMenuButton(chatId, " Добро пожаловать в PetShelterBot, "
                     + update.message().from().firstName() + "! Я помогаю взаимодействовать с приютами для животных!");
         }
-//        if (update.callbackQuery() != null) {
-//            chatId = update.callbackQuery().message().chat().id();
-//            userId = update.callbackQuery().from().id();
-//            userName = update.callbackQuery().from().firstName();
-//            message =update.callbackQuery().message().text();
-//            String receivedMessage = update.callbackQuery().data();
-
+        if (update.callbackQuery() != null) {
+            chatId = update.callbackQuery().message().chat().id();
+            userId = update.callbackQuery().from().id();
+            userName = update.callbackQuery().from().firstName();
+            message = update.callbackQuery().message().text();
+            messageId = update.callbackQuery().message().messageId();
+            String receivedMessage = update.callbackQuery().data();
+            if (receivedMessage.equals("Меню")) {
 //            switch (receivedMessage) {
 //                //Cтартовый блок
-//                case "Меню" -> {
-//                    sendButtonsOfStep0(chatId, message);
-//                    break;
+//                case "Меню":{
+                changeMessage(messageId, chatId,"Выберите запрос, который Вам подходит. " +
+                        "Если ни один из вариантов не подходит, я могу позвать Волонтера!", buttons.buttonsOfStart());
+//                    EditMessageText message1 = new EditMessageText(chatId, messageId, "Выберите запрос, который Вам подходит. " +
+//                            "Если ни один из вариантов не подходит, я могу позвать Волонтера!");
 //
-//                }
-                //                блок определения запроса
+//                    message1.replyMarkup(buttons.buttonsOfStart());
+//                    telegramBot.execute(message1);
+
+
+                }
+                //  блок определения запроса
 //                case "В начало" -> {
-//                    sendMenuButton(chatId,message);
+//                    sendMenuButton(chatId, message);
+//                }
 //                    break;
 //                case "Как взять животное из приюта?" -> takeAnimalSelection(messageId, chatId);
 //                case "Информация о приюте" -> shelterInformationSelection(messageId, chatId);
@@ -95,11 +107,9 @@ public class ShelterServiceImpl implements ShelterService {
 //                case "Обустройство для взрослой собаки" -> arrangementAdultSelectionDog(messageId, chatId);
 //                case "Обустройство для ограниченного" -> arrangementLimitedSelection(messageId, chatId);
 //                case "Cписок причин" -> listReasonsSelection(messageId, chatId);
-                }
-//            }
+            }
 
-
-
+    }
 
 
 
@@ -108,12 +118,14 @@ public class ShelterServiceImpl implements ShelterService {
         SendMessage sendMessage = new SendMessage(chatId, messageText);
         telegramBot.execute(sendMessage);
     }
+
     @Override
     public void sendMenuButton(Long chatId, String messageText) {
         SendMessage sendMessage = new SendMessage(chatId, messageText);
         sendMessage.replyMarkup(buttons.buttonMenu());
         telegramBot.execute(sendMessage);
     }
+
     @Override
     public void sendButtonsOfStep0(Long chatId, String messageText) {
         SendMessage sendMessage = new SendMessage(chatId, messageText);
@@ -121,7 +133,16 @@ public class ShelterServiceImpl implements ShelterService {
         telegramBot.execute(sendMessage);
     }
 
+    /**
+     * метод для создания/изменения сообщения
+     */
+    private void changeMessage(int messageId, long chatIdInButton, String messageText, InlineKeyboardMarkup keyboardMarkup) {
+        EditMessageText editMessageText = new EditMessageText(chatIdInButton, messageId, messageText);
+
+        editMessageText.replyMarkup(keyboardMarkup);
+        telegramBot.execute(editMessageText);
+
+    }
+
 
 }
-
-
