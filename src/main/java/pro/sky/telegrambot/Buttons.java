@@ -1,7 +1,6 @@
 package pro.sky.telegrambot;
 
-//import com.pengrad.telegrambot.model.request.InlineKeyboardButton;
-//import com.pengrad.telegrambot.model.request.InlineKeyboardMarkup;
+
 
 import com.pengrad.telegrambot.model.request.InlineKeyboardButton;
 import com.pengrad.telegrambot.model.request.InlineKeyboardMarkup;
@@ -29,9 +28,39 @@ public class Buttons {
         toStart.callbackData("В начало");
 
         return new InlineKeyboardMarkup(new InlineKeyboardButton[]{checkInfoButton},
-                new InlineKeyboardButton[]{callVolunteerButton},
                 new InlineKeyboardButton[]{getReportAboutPet},
                 new InlineKeyboardButton[]{howGetPet},
+                new InlineKeyboardButton[]{callVolunteerButton},
+                new InlineKeyboardButton[]{toStart});
+    }
+    public InlineKeyboardMarkup buttonsInformationAboutShelter() {
+        InlineKeyboardButton aboutShelterButton = new InlineKeyboardButton("О приюте");
+        InlineKeyboardButton callVolunteerButton = new InlineKeyboardButton("Позвать волонтера");
+//        InlineKeyboardButton timetableButton = new InlineKeyboardButton("График работы");
+//        InlineKeyboardButton addressButton = new InlineKeyboardButton("Адрес приюта");
+//        InlineKeyboardButton locationMapButton = new InlineKeyboardButton("Схема проезда");
+//        InlineKeyboardButton securityButton = new InlineKeyboardButton("Телефон охраны для оформления пропуска");
+//        InlineKeyboardButton safetyButton = new InlineKeyboardButton("Техника безопасности на территории приюта");
+        InlineKeyboardButton leavePhoneNumberButton = new InlineKeyboardButton("Оставить телефон для связи");
+        InlineKeyboardButton toStart = new InlineKeyboardButton("В начало");
+        aboutShelterButton.callbackData("О приюте");
+        callVolunteerButton.callbackData("Позвать волонтера");
+//        timetableButton.callbackData("График работы");
+//        addressButton.callbackData("Адрес приюта");
+//        locationMapButton.callbackData("Схема проезда");
+//        securityButton.callbackData("Телефон охраны для оформления пропуска");
+//        safetyButton.callbackData("Техника безопасности на территории приюта");
+        leavePhoneNumberButton.callbackData("Оставить телефон для связи");
+        toStart.callbackData("В начало");
+
+        return new InlineKeyboardMarkup(new InlineKeyboardButton[]{aboutShelterButton},
+//                new InlineKeyboardButton[]{timetableButton},
+//                new InlineKeyboardButton[]{addressButton},
+//                new InlineKeyboardButton[]{locationMapButton},
+//                new InlineKeyboardButton[]{securityButton},
+//                new InlineKeyboardButton[]{safetyButton},
+                new InlineKeyboardButton[]{leavePhoneNumberButton},
+                new InlineKeyboardButton[]{callVolunteerButton},
                 new InlineKeyboardButton[]{toStart});
     }
 //    public InlineKeyboardMarkup takeAnimalButton() {

@@ -3,8 +3,10 @@ package pro.sky.telegrambot.service;
 import com.pengrad.telegrambot.TelegramBot;
 import com.pengrad.telegrambot.model.Update;
 import com.pengrad.telegrambot.model.request.InlineKeyboardMarkup;
+import com.pengrad.telegrambot.request.DeleteMessage;
 import com.pengrad.telegrambot.request.EditMessageText;
 import com.pengrad.telegrambot.request.SendMessage;
+import com.pengrad.telegrambot.response.BaseResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -31,63 +33,57 @@ public class ShelterServiceImpl implements ShelterService {
     public void process(Update update) {
 
 
-        if (update.message() == null) {
+        if (update.message() == null && update.callbackQuery() == null) {
             logger.info("пользователь отправил пустое сообщение");
-            return ;
+            return;
         }
-        Long chatId = update.message().chat().id();
-        String message = update.message().text();
-        Long userId = update.message().from().id();
-        String userName = update.message().from().firstName();
-        int messageId = update.message().messageId();
-
-        if (message == null) {
-            sendMessage(chatId, "для начала работы, отправь /start");
-            return ;
-        }
-        if (message.equals("/start")) {
-            sendMenuButton(chatId, " Добро пожаловать в PetShelterBot, "
-                    + update.message().from().firstName() + "! Я помогаю взаимодействовать с приютами для животных!");
-        }
-        if (update.callbackQuery() != null) {
-            chatId = update.callbackQuery().message().chat().id();
-            userId = update.callbackQuery().from().id();
-            userName = update.callbackQuery().from().firstName();
-            message = update.callbackQuery().message().text();
-            messageId = update.callbackQuery().message().messageId();
-            String receivedMessage = update.callbackQuery().data();
-            if (receivedMessage.equals("Меню")) {
-//            switch (receivedMessage) {
-//                //Cтартовый блок
-//                case "Меню":{
-                changeMessage(messageId, chatId,"Выберите запрос, который Вам подходит. " +
-                        "Если ни один из вариантов не подходит, я могу позвать Волонтера!", buttons.buttonsOfStart());
-//                    EditMessageText message1 = new EditMessageText(chatId, messageId, "Выберите запрос, который Вам подходит. " +
-//                            "Если ни один из вариантов не подходит, я могу позвать Волонтера!");
 //
-//                    message1.replyMarkup(buttons.buttonsOfStart());
-//                    telegramBot.execute(message1);
+        if (update.callbackQuery() == null) {
+            Long chatId = update.message().chat().id();
+            String message = update.message().text();
+            Long userId = update.message().from().id();
+            String userName = update.message().from().firstName();
+            int messageId = update.message().messageId();
+            if (!update.message().text().equals("/start")) {
+                sendMessage(chatId, "для начала работы, отправь /start");
+                return;
+            }
+            if (update.message().text().equals("/start")) {
+                sendMenuButton(chatId, " Добро пожаловать в PetShelterBot, "
+                        + update.message().from().firstName() + "! Я помогаю взаимодействовать с приютами для животных!");
+            }
+        } else {
+            if (update.callbackQuery() != null) {
+                Long chatId = update.callbackQuery().message().chat().id();
+                Long userId = update.callbackQuery().from().id();
+                String userName = update.callbackQuery().from().firstName();
+                String message = update.callbackQuery().message().text();
+                int messageId = update.callbackQuery().message().messageId();
+                String receivedMessage = update.callbackQuery().data();
 
-
-                }
-                //  блок определения запроса
-//                case "В начало" -> {
-//                    sendMenuButton(chatId, message);
+//                if (receivedMessage.equals("Меню")) {
+//
 //                }
+                switch (receivedMessage) {
+                    //Cтартовый блок
+                    case "Меню" ->
+                            changeMessage(messageId, chatId, "Выберите запрос, который Вам подходит. " +
+                                    "Если ни один из вариантов не подходит, я могу позвать Волонтера!", buttons.buttonsOfStart());
+
+                    //  блок определения запроса
+                    case "Информация о приюте" ->
+                            changeMessage(messageId, chatId, "Добро пожаловать в наш приют для собак!",
+                                    buttons.buttonsInformationAboutShelter());
+                    case "В начало" -> changeMessage(messageId, chatId, "Вы вернулись в начало!", buttons.buttonMenu());
+
 //                    break;
 //                case "Как взять животное из приюта?" -> takeAnimalSelection(messageId, chatId);
-//                case "Информация о приюте" -> shelterInformationSelection(messageId, chatId);
+
+
 //                case "Позвать волонтера" -> callAVolunteer(update);
 //                case "Прислать отчет о питомце" -> petReportSelection(messageId, chatId);
 
-
-//                //блок “Прислать отчет о питомце”
-//                case "Форма ежедневного отчета" -> {
-//                    takeDailyReportFormPhoto(chatId);
-//                    photoCheckButton = true; // Устанавливаем флаг в true после нажатия кнопки
-//                }
-//
-//                //Блок "Информация о приюте"
+//Блок "Информация о приюте"
 //                case "Информация о приюте для кошек" -> aboutCatShelterSelection(messageId, chatId);
 //                case "Расписание работы приюта для кошек" -> catShelterWorkingHoursSelection(messageId, chatId);
 //                case "Контакты охраны приюта для кошек" -> catShelterSecurityContactSelection(messageId, chatId);
@@ -96,6 +92,15 @@ public class ShelterServiceImpl implements ShelterService {
 //                case "Контакты охраны приюта для собак" -> dogShelterSecurityContactSelection(messageId, chatId);
 //                case "Общие правила поведения" -> safetyRecommendationsSelection(messageId, chatId);
 //                case "Запись ваших контактов", "Запись контактов" -> recordingContactsSelection(messageId, chatId);
+//
+//
+// блок “Прислать отчет о питомце”
+//                case "Форма ежедневного отчета" -> {
+//                    takeDailyReportFormPhoto(chatId);
+//                    photoCheckButton = true; // Устанавливаем флаг в true после нажатия кнопки
+//                }
+//
+//
 //
 //                //блок “Как взять животное из приюта”
 //                case "Правила знакомства" -> datingRulesSelection(messageId, chatId);
@@ -107,11 +112,12 @@ public class ShelterServiceImpl implements ShelterService {
 //                case "Обустройство для взрослой собаки" -> arrangementAdultSelectionDog(messageId, chatId);
 //                case "Обустройство для ограниченного" -> arrangementLimitedSelection(messageId, chatId);
 //                case "Cписок причин" -> listReasonsSelection(messageId, chatId);
+                }
             }
 
+        }
+
     }
-
-
 
     @Override
     public void sendMessage(Long chatId, String messageText) {
@@ -119,6 +125,9 @@ public class ShelterServiceImpl implements ShelterService {
         telegramBot.execute(sendMessage);
     }
 
+    /**
+     * метод для отправки кнопки "Меню"
+     */
     @Override
     public void sendMenuButton(Long chatId, String messageText) {
         SendMessage sendMessage = new SendMessage(chatId, messageText);
@@ -126,6 +135,9 @@ public class ShelterServiceImpl implements ShelterService {
         telegramBot.execute(sendMessage);
     }
 
+    /**
+     * метод для отправки кнопок Этапа 0. Определение запроса
+     */
     @Override
     public void sendButtonsOfStep0(Long chatId, String messageText) {
         SendMessage sendMessage = new SendMessage(chatId, messageText);
@@ -134,7 +146,7 @@ public class ShelterServiceImpl implements ShelterService {
     }
 
     /**
-     * метод для создания/изменения сообщения
+     * метод для изменения сообщения
      */
     private void changeMessage(int messageId, long chatIdInButton, String messageText, InlineKeyboardMarkup keyboardMarkup) {
         EditMessageText editMessageText = new EditMessageText(chatIdInButton, messageId, messageText);
@@ -142,6 +154,13 @@ public class ShelterServiceImpl implements ShelterService {
         editMessageText.replyMarkup(keyboardMarkup);
         telegramBot.execute(editMessageText);
 
+    }
+
+    /**
+     * Провека ввода /start
+     */
+    private boolean isStartEntered(Update update) {
+        return update.message().text() != null && update.message().text().equals("/start");
     }
 
 

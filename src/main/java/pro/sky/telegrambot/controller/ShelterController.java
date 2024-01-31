@@ -16,6 +16,9 @@ public  class ShelterController {
         this.shelterService = shelterService;
         this.telegramBot = telegramBot;
     }
+//    @ApiResposes({
+//            @ApiResponse
+//    })
 //    public BotApiMethod<> process(@RequestBody Update update) {
 //        return shelterService.process(update);
 //    }
