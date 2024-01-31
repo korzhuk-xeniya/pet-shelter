@@ -1,6 +1,7 @@
 package pro.sky.telegrambot.service;
 
 import com.pengrad.telegrambot.TelegramBot;
+import com.pengrad.telegrambot.TelegramException;
 import com.pengrad.telegrambot.model.Update;
 import com.pengrad.telegrambot.model.request.InlineKeyboardMarkup;
 import com.pengrad.telegrambot.request.DeleteMessage;
@@ -14,7 +15,6 @@ import pro.sky.telegrambot.Buttons;
 import pro.sky.telegrambot.repository.ShelterRepository;
 
 
-//import static jdk.internal.joptsimple.internal.Messages.message;
 
 @Service
 public class ShelterServiceImpl implements ShelterService {
@@ -45,15 +45,18 @@ public class ShelterServiceImpl implements ShelterService {
             String userName = update.message().from().firstName();
             int messageId = update.message().messageId();
             if (!update.message().text().equals("/start")) {
+                logger.info("пользователь отправил  сообщение с неопределенным содержанием");
                 sendMessage(chatId, "для начала работы, отправь /start");
                 return;
             }
             if (update.message().text().equals("/start")) {
+                logger.info("пользователь отправил /start");
                 sendMenuButton(chatId, " Добро пожаловать в PetShelterBot, "
                         + update.message().from().firstName() + "! Я помогаю взаимодействовать с приютами для животных!");
             }
         } else {
             if (update.callbackQuery() != null) {
+                logger.info("пользователь нажал на кнопку");
                 Long chatId = update.callbackQuery().message().chat().id();
                 Long userId = update.callbackQuery().from().id();
                 String userName = update.callbackQuery().from().firstName();
@@ -66,9 +69,8 @@ public class ShelterServiceImpl implements ShelterService {
 //                }
                 switch (receivedMessage) {
                     //Cтартовый блок
-                    case "Меню" ->
-                            changeMessage(messageId, chatId, "Выберите запрос, который Вам подходит. " +
-                                    "Если ни один из вариантов не подходит, я могу позвать Волонтера!", buttons.buttonsOfStart());
+                    case "Меню" -> changeMessage(messageId, chatId, "Выберите запрос, который Вам подходит. " +
+                            "Если ни один из вариантов не подходит, я могу позвать Волонтера!", buttons.buttonsOfStart());
 
                     //  блок определения запроса
                     case "Информация о приюте" ->
@@ -121,6 +123,7 @@ public class ShelterServiceImpl implements ShelterService {
 
     @Override
     public void sendMessage(Long chatId, String messageText) {
+        logger.info("Был вызван метод для отправки сообщения", chatId, messageText);
         SendMessage sendMessage = new SendMessage(chatId, messageText);
         telegramBot.execute(sendMessage);
     }
@@ -130,6 +133,7 @@ public class ShelterServiceImpl implements ShelterService {
      */
     @Override
     public void sendMenuButton(Long chatId, String messageText) {
+        logger.info("Был вызван метод для отправки кнопки Меню", chatId, messageText);
         SendMessage sendMessage = new SendMessage(chatId, messageText);
         sendMessage.replyMarkup(buttons.buttonMenu());
         telegramBot.execute(sendMessage);
@@ -140,6 +144,7 @@ public class ShelterServiceImpl implements ShelterService {
      */
     @Override
     public void sendButtonsOfStep0(Long chatId, String messageText) {
+        logger.info("Был вызван метод для отправки кнопок 0 этапа", chatId, messageText);
         SendMessage sendMessage = new SendMessage(chatId, messageText);
         sendMessage.replyMarkup(buttons.buttonsOfStart());
         telegramBot.execute(sendMessage);
@@ -149,12 +154,15 @@ public class ShelterServiceImpl implements ShelterService {
      * метод для изменения сообщения
      */
     private void changeMessage(int messageId, long chatIdInButton, String messageText, InlineKeyboardMarkup keyboardMarkup) {
+        logger.info("Был вызван метод для изменения сообщения", messageId, chatIdInButton, messageText, keyboardMarkup);
         EditMessageText editMessageText = new EditMessageText(chatIdInButton, messageId, messageText);
 
         editMessageText.replyMarkup(keyboardMarkup);
+
         telegramBot.execute(editMessageText);
 
     }
+
 
     /**
      * Провека ввода /start
