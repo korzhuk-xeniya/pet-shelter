@@ -20,7 +20,7 @@ import pro.sky.telegrambot.repository.ShelterRepository;
 public class ShelterServiceImpl implements ShelterService {
     private final TelegramBot telegramBot;
     private final ShelterRepository repository;
-    private Buttons buttons;
+    private final Buttons buttons;
     private final Logger logger = LoggerFactory.getLogger(ShelterServiceImpl.class);
 
     public ShelterServiceImpl(TelegramBot telegramBot, ShelterRepository repository, Buttons buttons) {
@@ -79,16 +79,14 @@ public class ShelterServiceImpl implements ShelterService {
                     case "В начало" -> changeMessage(messageId, chatId, "Вы вернулись в начало!", buttons.buttonMenu());
 
 //                    break;
-//                case "Как взять животное из приюта?" -> takeAnimalSelection(messageId, chatId);
+                case "Как взять животное из приюта?" -> changeMessage(messageId, chatId, "Вы вернулись в начало!", buttons.takeAnimalButton());
 
 
 //                case "Позвать волонтера" -> callAVolunteer(update);
 //                case "Прислать отчет о питомце" -> petReportSelection(messageId, chatId);
 
 //Блок "Информация о приюте"
-//                case "Информация о приюте для кошек" -> aboutCatShelterSelection(messageId, chatId);
-//                case "Расписание работы приюта для кошек" -> catShelterWorkingHoursSelection(messageId, chatId);
-//                case "Контакты охраны приюта для кошек" -> catShelterSecurityContactSelection(messageId, chatId);
+//
 //                case "Информация о приюте для собак" -> aboutDogShelterSelection(messageId, chatId);
 //                case "Расписание работы приюта для собак" -> dogShelterWorkingHoursSelection(messageId, chatId);
 //                case "Контакты охраны приюта для собак" -> dogShelterSecurityContactSelection(messageId, chatId);
@@ -108,9 +106,9 @@ public class ShelterServiceImpl implements ShelterService {
 //                case "Правила знакомства" -> datingRulesSelection(messageId, chatId);
 //                case "Список документов" -> documentsSelection(messageId, chatId);
 //                case "Рекомендации по транспортировке" -> transportationSelection(messageId, chatId);
-//                case "Обустройство котенка" -> KittenArrangementSelection(messageId, chatId);
+//
 //                case "Обустройство щенка" -> puppyArrangementSelection(messageId, chatId);
-//                case "Обустройство для взрослого кота" -> arrangementAdultSelectionCat(messageId, chatId);
+//
 //                case "Обустройство для взрослой собаки" -> arrangementAdultSelectionDog(messageId, chatId);
 //                case "Обустройство для ограниченного" -> arrangementLimitedSelection(messageId, chatId);
 //                case "Cписок причин" -> listReasonsSelection(messageId, chatId);
