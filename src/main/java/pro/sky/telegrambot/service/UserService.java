@@ -1,5 +1,6 @@
 package pro.sky.telegrambot.service;
 
+import com.pengrad.telegrambot.model.Update;
 import pro.sky.telegrambot.model.User;
 import pro.sky.telegrambot.repository.UserRepository;
 
@@ -25,4 +26,9 @@ public interface UserService {
 
     //Получить юзера из бд
     Optional<User> getUserByChatId(int chatId);
+
+    /**
+         * Поиск пользователя по chatId, если он есть то обновляем dateTimeToTook, если нет, создается новый пользователь
+         */
+    void saveUser(Update update, boolean tookAPET);
 }

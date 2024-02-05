@@ -9,6 +9,8 @@ import javax.persistence.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+import java.util.UUID;
 
 @Getter
 @Setter
@@ -20,7 +22,7 @@ public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false, unique = true)
-    private long id;
+    private UUID id;
 
     @Column(name = "first_name")
     private String firstName;
@@ -28,15 +30,94 @@ public class User {
     @Column(name = "took_a_pet")
     private Boolean tookAPet;
 
+    @Column(name = "date_time_to_took")
+    private LocalDateTime dateTimeToTook;
+
     @Column(name = "chat_id")
     private int chatId;
 
     @Column(name = "telephone_number")
     private String number;
 
-    @Column(name = "date_time_to_took")
-    private LocalDateTime dateTimeToTook;
+
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     private List<Report> reports = new ArrayList<>();
+
+    public User(String firstName, Boolean tookAPet, int chatId, LocalDateTime dateTimeToTook) {
+        this.firstName = firstName;
+        this.tookAPet = tookAPet;
+        this.chatId = chatId;
+        this.dateTimeToTook = dateTimeToTook;
+    }
+
+    public UUID getId() {
+        return id;
+    }
+
+    public void setId(UUID id) {
+        this.id = id;
+    }
+
+    public String getFirstName() {
+        return firstName;
+    }
+
+    public void setFirstName(String firstName) {
+        this.firstName = firstName;
+    }
+
+    public Boolean getTookAPet() {
+        return tookAPet;
+    }
+
+    public void setTookAPet(Boolean tookAPet) {
+        this.tookAPet = tookAPet;
+    }
+
+    public int getChatId() {
+        return chatId;
+    }
+
+    public void setChatId(int chatId) {
+        this.chatId = chatId;
+    }
+
+    public String getNumber() {
+        return number;
+    }
+
+    public void setNumber(String number) {
+        this.number = number;
+    }
+
+    public LocalDateTime getDateTimeToTook() {
+        return dateTimeToTook;
+    }
+
+    public void setDateTimeToTook(LocalDateTime dateTimeToTook) {
+        this.dateTimeToTook = dateTimeToTook;
+    }
+
+    public List<Report> getReports() {
+        return reports;
+    }
+
+    public void setReports(List<Report> reports) {
+        this.reports = reports;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        User user = (User) o;
+        return id == user.id && chatId == user.chatId && Objects.equals(firstName, user.firstName) && Objects.equals(tookAPet, user.tookAPet) && Objects.equals(number, user.number) && Objects.equals(dateTimeToTook, user.dateTimeToTook) && Objects.equals(reports, user.reports);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, firstName, tookAPet, chatId, number, dateTimeToTook, reports);
+    }
+
 }

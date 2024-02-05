@@ -10,13 +10,13 @@ public class Shelter {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
     private UUID id;
-    @Column(name = "nameOfShelter")
+    @Column(name = "name_of_shelter")
     private String nameOfShelter;
-    @Column(name = "aboutShelter")
+    @Column(name = "about_shelter")
     private  String informationAboutShelter;
     @Column(name = "address")
     private String address;
-    @Column(name="phoneNumber")
+    @Column(name="phone_number")
     private String phoneNumber;
 
     public Shelter() {

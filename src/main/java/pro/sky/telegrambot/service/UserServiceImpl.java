@@ -1,11 +1,13 @@
 package pro.sky.telegrambot.service;
 
+import com.pengrad.telegrambot.model.Update;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import pro.sky.telegrambot.model.User;
 import pro.sky.telegrambot.repository.UserRepository;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 @Service
 public class UserServiceImpl implements UserService {
@@ -51,6 +53,23 @@ public class UserServiceImpl implements UserService {
     public Optional<User> getUserByChatId(int chatId) {
         logger.info("Был вызван метод для получения пользователя из базы данных", chatId);
         return userRepository.findByChatId(chatId);
+    }
+@Override
+    /**
+     * Поиск пользователя по chatId, если он есть то обновляем dateTimeToTook, если нет, создается новый пользователь
+     */
+    public void saveUser(Update update, boolean tookAPET) {
+        int chatId = update.message().chat().id().intValue();
+        Optional<User> userOptional = getUserByChatId(chatId);
+
+        if (userOptional.isPresent()) {
+            User user = userOptional.get();
+            user.setDateTimeToTook(LocalDateTime.now());
+            updateUser(user);
+        } else {
+            User newUser = new User(update.message().from().firstName(),tookAPET,chatId, LocalDateTime.now());
+            userAdd(newUser);
+        }
     }
 }
 

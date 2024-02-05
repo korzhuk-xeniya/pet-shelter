@@ -28,6 +28,7 @@ public class VolunteerServiceImpl implements VolunteerService {
     @Override
     public Volunteer saveVolunteerInBd(Volunteer volunteer) {
         logger.info("Был вызван метод для добавления нового волонтера в базу данных", volunteer);
+
         return volunteerRepository.save(volunteer);
     }
 

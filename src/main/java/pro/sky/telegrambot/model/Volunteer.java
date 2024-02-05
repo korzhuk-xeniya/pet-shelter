@@ -1,6 +1,7 @@
 package pro.sky.telegrambot.model;
 
 import javax.persistence.*;
+import java.util.Objects;
 import java.util.UUID;
 
 @Entity
@@ -10,6 +11,9 @@ public class Volunteer {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id_volunteer", nullable = false, unique = true)
     private UUID id;
+
+
+
     @Column(name = "name_volunteer")
     private String name;
     @Column(name = "last_name_volunteer")
@@ -62,7 +66,26 @@ public class Volunteer {
         this.chatId = chatId;
     }
 
+    @Override
+    public String toString() {
+        return "Volunteer{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                ", lastName='" + lastName + '\'' +
+                ", chatId=" + chatId +
+                '}';
+    }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Volunteer volunteer = (Volunteer) o;
+        return chatId == volunteer.chatId && Objects.equals(id, volunteer.id) && Objects.equals(name, volunteer.name) && Objects.equals(lastName, volunteer.lastName);
+    }
 
-
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, name, lastName, chatId);
+    }
 }

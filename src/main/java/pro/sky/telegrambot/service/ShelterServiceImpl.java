@@ -1,18 +1,20 @@
 package pro.sky.telegrambot.service;
 
 import com.pengrad.telegrambot.TelegramBot;
-import com.pengrad.telegrambot.TelegramException;
 import com.pengrad.telegrambot.model.Update;
 import com.pengrad.telegrambot.model.request.InlineKeyboardMarkup;
-import com.pengrad.telegrambot.request.DeleteMessage;
 import com.pengrad.telegrambot.request.EditMessageText;
 import com.pengrad.telegrambot.request.SendMessage;
-import com.pengrad.telegrambot.response.BaseResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import pro.sky.telegrambot.Buttons;
+import pro.sky.telegrambot.model.Volunteer;
 import pro.sky.telegrambot.repository.ShelterRepository;
+import pro.sky.telegrambot.repository.VolunteerRepository;
+
+import java.util.List;
+
 
 
 
@@ -20,13 +22,21 @@ import pro.sky.telegrambot.repository.ShelterRepository;
 public class ShelterServiceImpl implements ShelterService {
     private final TelegramBot telegramBot;
     private final ShelterRepository repository;
+    private final VolunteerRepository volunteerRepository;
     private final Buttons buttons;
+    private final UserService userService;
+    private final VolunteerService volunteerService;
     private final Logger logger = LoggerFactory.getLogger(ShelterServiceImpl.class);
+    private final List<String> admins;
 
-    public ShelterServiceImpl(TelegramBot telegramBot, ShelterRepository repository, Buttons buttons) {
+    public ShelterServiceImpl(TelegramBot telegramBot, ShelterRepository repository, VolunteerRepository volunteerRepository, Buttons buttons, UserService userService, VolunteerService volunteerService, List<String> admins) {
         this.telegramBot = telegramBot;
         this.repository = repository;
+        this.volunteerRepository = volunteerRepository;
         this.buttons = buttons;
+        this.userService = userService;
+        this.volunteerService = volunteerService;
+        this.admins = admins;
     }
 
     @Override
@@ -43,6 +53,7 @@ public class ShelterServiceImpl implements ShelterService {
             String message = update.message().text();
             Long userId = update.message().from().id();
             String userName = update.message().from().firstName();
+            String userLastName = update.message().from().lastName();
             int messageId = update.message().messageId();
             if (!update.message().text().equals("/start")) {
                 logger.info("пользователь отправил  сообщение с неопределенным содержанием");
@@ -53,6 +64,11 @@ public class ShelterServiceImpl implements ShelterService {
                 logger.info("пользователь отправил /start");
                 sendMenuButton(chatId, " Добро пожаловать в PetShelterBot, "
                         + update.message().from().firstName() + "! Я помогаю взаимодействовать с приютами для животных!");
+                if(admins.contains(update.message().from().username())) {
+                    volunteerService.saveVolunteerInBd(new Volunteer(userName, userLastName, chatId));
+                } else {
+                    userService.saveUser(update, false);
+                }
             }
         } else {
             if (update.callbackQuery() != null) {
@@ -79,10 +95,11 @@ public class ShelterServiceImpl implements ShelterService {
                     case "В начало" -> changeMessage(messageId, chatId, "Вы вернулись в начало!", buttons.buttonMenu());
 
 //                    break;
-                case "Как взять животное из приюта?" -> changeMessage(messageId, chatId, "Вы вернулись в начало!", buttons.takeAnimalButton());
+                    case "Как взять животное из приюта?" ->
+                            changeMessage(messageId, chatId, "Вы вернулись в начало!", buttons.takeAnimalButton());
 
 
-//                case "Позвать волонтера" -> callAVolunteer(update);
+                case "Позвать волонтера" -> callAVolunteer(update);
 //                case "Прислать отчет о питомце" -> petReportSelection(messageId, chatId);
 
 //Блок "Информация о приюте"
@@ -169,5 +186,19 @@ public class ShelterServiceImpl implements ShelterService {
         return update.message().text() != null && update.message().text().equals("/start");
     }
 
-
+    /**
+     * @param update
+     * Реализация кнопки "Позвать волонтера"
+     */
+    public void callAVolunteer(Update update) {
+        List<Volunteer> volunteerList = volunteerRepository.findAll();
+        for (Volunteer volunteer : volunteerList) {
+            String user = update.callbackQuery().from().username();
+            SendMessage sendMessage = new SendMessage(volunteer.getChatId(),
+                    "Пользователь: @" + user + " просит с ним связаться.");
+            telegramBot.execute(sendMessage);
+        }
+    }
 }
+
+
