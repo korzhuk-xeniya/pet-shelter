@@ -8,5 +8,11 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface VolunteerRepository extends JpaRepository<Volunteer, UUID>{
-    Optional<Object> findAById(UUID id);
+    Optional<Object> findAById(long id);
+
+    void deleteById(long id);
+
+    Optional<Object> findById(long id);
+
+    Optional<Volunteer> findByChatId(long chatId);
 }

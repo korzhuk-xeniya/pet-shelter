@@ -1,5 +1,6 @@
 package pro.sky.telegrambot.service;
 
+import com.pengrad.telegrambot.model.Update;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -8,7 +9,7 @@ import pro.sky.telegrambot.model.Volunteer;
 import pro.sky.telegrambot.repository.VolunteerRepository;
 
 import java.util.List;
-import java.util.UUID;
+import java.util.Optional;
 
 @Service
 public class VolunteerServiceImpl implements VolunteerService {
@@ -37,9 +38,9 @@ public class VolunteerServiceImpl implements VolunteerService {
      * @return волонтера по id
      */
     @Override
-    public Volunteer readVolunteer (UUID id) {
+    public Volunteer readVolunteer(long id) {
         logger.error("Был вызван метод для выбрасывания ошибки если волонтер не найден по id", id);
-        return volunteerRepository.findById(id).
+        return (Volunteer) volunteerRepository.findById(id).
                 orElseThrow(() -> new VolunteerNotFoundException("Волонтер с id " + id + " не найден в базе данных"));
     }
 
@@ -60,7 +61,7 @@ public class VolunteerServiceImpl implements VolunteerService {
      * удаление волонтера из базы данных
      */
     @Override
-    public void deleteById(UUID id) {
+    public void deleteById(long id) {
         logger.info("Был вызван метод для удаления волонтера", id);
         volunteerRepository.deleteById(id);
     }
@@ -76,5 +77,37 @@ public class VolunteerServiceImpl implements VolunteerService {
     public List<Volunteer> findAllVolunteers() {
         logger.info("Был вызван метод для поиска всех волонтеров");
         return volunteerRepository.findAll().stream().toList();
+    }
+
+    /**
+     * @param chatId
+     * @return
+     * получение волонтера из базы данных
+     */
+    @Override
+
+    public Optional<Volunteer> getVolunteerByChatId(long chatId) {
+        logger.info("Был вызван метод для получения пользователя из базы данных", chatId);
+        return volunteerRepository.findByChatId(chatId);
+    }
+    @Override
+    /**
+     * Поиск волонтера по chatId, если он есть то обновляем, если нет, создается новый волонтер
+     */
+    public void saveVolunteer(Update update) {
+        logger.info("Был вызван метод для сохранения волонтера в базу данных", update);
+        int chatId = update.message().chat().id().intValue();
+        Optional<Volunteer> volunteerOptional = getVolunteerByChatId(chatId);
+
+        if (volunteerOptional.isPresent()) {
+            logger.info("Волонтер уже есть в базе данных");
+            Volunteer volunteer = volunteerOptional.get();
+
+            updateVolunteerById(volunteer);
+        } else {
+            Volunteer newVolunteer = new Volunteer(update.message().from().firstName(),update.message().from().lastName(),
+                    chatId);
+            saveVolunteerInBd(newVolunteer);
+        }
     }
 }

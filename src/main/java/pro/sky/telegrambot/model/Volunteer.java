@@ -10,7 +10,7 @@ public class Volunteer {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id_volunteer", nullable = false, unique = true)
-    private UUID id;
+    private long id;
 
 
 
@@ -28,17 +28,17 @@ public class Volunteer {
         this.lastName = lastName;
         this.chatId = chatId;
     }
-    public Volunteer(UUID id, String name, String lastName, long chatId) {
+    public Volunteer(long id, String name, String lastName, long chatId) {
         this.id = id;
         this.name = name;
         this.lastName = lastName;
         this.chatId = chatId;
     }
-    public UUID getId() {
+    public long getId() {
         return id;
     }
 
-    public void setId(UUID id) {
+    public void setId(long id) {
         this.id = id;
     }
 

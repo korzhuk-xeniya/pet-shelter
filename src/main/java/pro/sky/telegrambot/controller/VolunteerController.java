@@ -108,7 +108,7 @@ public class VolunteerController {
             })
 
     @GetMapping("/read/{id}")
-    public Volunteer findByIdVolunteer(@PathVariable @Positive UUID id) {
+    public Volunteer findByIdVolunteer(@PathVariable @Positive long id) {
         return volunteerService.readVolunteer(id);
     }
 
@@ -136,7 +136,7 @@ public class VolunteerController {
                             ))
             })
     @DeleteMapping("/delete/{id}")
-    public void deleteVolunteerById(@PathVariable UUID id) {
+    public void deleteVolunteerById(@PathVariable long id) {
         volunteerService.deleteById(id);
     }
 

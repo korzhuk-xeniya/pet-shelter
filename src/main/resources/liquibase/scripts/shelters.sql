@@ -7,7 +7,7 @@ name_of_shelter VARCHAR,
 about_shelter VARCHAR,
 address VARCHAR,
 phone_number VARCHAR(50)
---CONSTRAINT pet_shelters_pk PRIMARY KEY (id)
+
 );
 CREATE TABLE user_tg
 (
@@ -15,7 +15,7 @@ CREATE TABLE user_tg
     first_name        VARCHAR not null,
     took_a_pet        BOOLEAN,
     date_time_to_took TIMESTAMP,
-    chat_id           INT not null,
+    chat_id           bigint not null,
     telephone_number  VARCHAR(50)
 );
 

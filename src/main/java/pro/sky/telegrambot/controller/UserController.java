@@ -34,7 +34,7 @@ public class UserController {
             @ApiResponse(responseCode = "500", description = "Ошибка сервера")
     })
     @GetMapping("/chatId/{chatId}")
-    public ResponseEntity<User> getUserByChatId(@PathVariable  int chatId) {
+    public ResponseEntity<User> getUserByChatId(@PathVariable  long chatId) {
         return ResponseEntity.of(userService.getUserByChatId(chatId));
     }
 
@@ -90,7 +90,7 @@ public class UserController {
             @ApiResponse(responseCode = "500", description = "Ошибка сервера")
     })
     @GetMapping("/boolean/{chatId}")
-    public boolean checkIdChatUser(@PathVariable int chatId) {
+    public boolean checkIdChatUser(@PathVariable long chatId) {
         return userService.checkIdChatUser(chatId);
     }
 }

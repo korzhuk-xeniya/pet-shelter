@@ -5,5 +5,5 @@ import pro.sky.telegrambot.model.Shelter;
 
 import java.util.UUID;
 
-public interface ShelterRepository extends JpaRepository<Shelter, UUID> {
+public interface ShelterRepository extends JpaRepository<Shelter, Long> {
 }

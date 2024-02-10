@@ -5,17 +5,19 @@ import com.pengrad.telegrambot.model.Update;
 import com.pengrad.telegrambot.model.request.InlineKeyboardMarkup;
 import com.pengrad.telegrambot.request.EditMessageText;
 import com.pengrad.telegrambot.request.SendMessage;
-import com.pengrad.telegrambot.response.GetChatAdministratorsResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import pro.sky.telegrambot.Buttons;
 import pro.sky.telegrambot.model.Volunteer;
 import pro.sky.telegrambot.repository.ShelterRepository;
+import pro.sky.telegrambot.repository.UserRepository;
 import pro.sky.telegrambot.repository.VolunteerRepository;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 
 @Service
@@ -23,28 +25,34 @@ public class ShelterServiceImpl implements ShelterService {
     private final TelegramBot telegramBot;
     private final ShelterRepository repository;
     private final VolunteerRepository volunteerRepository;
+    private final UserRepository userRepository;
     private final Buttons buttons;
     private final UserService userService;
     private final VolunteerService volunteerService;
     private final Logger logger = LoggerFactory.getLogger(ShelterServiceImpl.class);
+    private boolean isCorrectNumber = false;
+    private static final Pattern MESSAGE_PATTERN = Pattern.compile("^(\\+7)([0-9]{10})$");
+//   @Value(value = "${telegram.bot.admins}")
+//    private List<String> admins;
 
-
-    public ShelterServiceImpl(TelegramBot telegramBot, ShelterRepository repository, VolunteerRepository volunteerRepository, Buttons buttons, UserService userService, VolunteerService volunteerService) {
+    public ShelterServiceImpl(TelegramBot telegramBot, ShelterRepository repository, VolunteerRepository volunteerRepository, Buttons buttons, UserService userService, VolunteerService volunteerService, List<String> admins, UserRepository userRepository) {
         this.telegramBot = telegramBot;
         this.repository = repository;
         this.volunteerRepository = volunteerRepository;
         this.buttons = buttons;
         this.userService = userService;
         this.volunteerService = volunteerService;
-//        this.admins = admins;
-    }
 
+//        this.admins = admins;
+        this.userRepository = userRepository;
+    }
 
 
     @Override
     public void process(Update update) {
-         List<String> admins = new ArrayList<>(update.message().chat().administrators());
-        update.chatMember().getClass().getChatAdministratorsResponse;
+        List<String> adminsVolunteers = new ArrayList<>();
+        adminsVolunteers.add("xeny_sk");
+
 
         if (update.message() == null && update.callbackQuery() == null) {
             logger.info("пользователь отправил пустое сообщение");
@@ -58,19 +66,40 @@ public class ShelterServiceImpl implements ShelterService {
             String userName = update.message().from().firstName();
             String userLastName = update.message().from().lastName();
             int messageId = update.message().messageId();
-            if (!update.message().text().equals("/start")) {
-                logger.info("пользователь отправил  сообщение с неопределенным содержанием");
+//            Pattern pattern = Pattern.compile("^(\\+7)([0-9]{10})$");
+            Matcher matcher = MESSAGE_PATTERN.matcher(message);
+            if (update.message() != null &&  matcher.find()) {
+                userService.saveUser(update, false);
+                userRepository.updateNumber(update.message().chat().id().intValue(), update.message().text());
+                changeMessage(messageId, chatId, "Номер записан, Вам обязательно позвонят!",
+                        buttons.buttonMenu());
+
+                isCorrectNumber = false;
+            } else if (update.message() != null  && !matcher.find()) {
+                changeMessage(messageId, chatId, "Номер не правильно набран, повторите ещё раз!",
+                        buttons.buttonMenu());
+
+            }
+            if (!update.message().text().equals("/start")&& !matcher.find()) {
+                logger.info("пользователь отправил  сообщение  с неопределенным содержанием");
+
+
                 sendMessage(chatId, "для начала работы, отправь /start");
                 return;
             }
+//            Pattern pattern = Pattern.compile("^(\\+7)([0-9]{10})$");
+//            Pattern pattern = Pattern.compile("^\\+?[1-9][0-9]{7,14}$");
+
             if (update.message().text().equals("/start")) {
                 logger.info("пользователь отправил /start");
                 sendMenuButton(chatId, " Добро пожаловать в PetShelterBot, "
                         + update.message().from().firstName() + "! Я помогаю взаимодействовать с приютами для животных!");
-                if (admins.contains(update.message().from().username())) {
+                if (adminsVolunteers.contains(update.message().from().username())) {
                     logger.info("пользователь есть среди администраторов");
-                    volunteerService.saveVolunteerInBd(new Volunteer(userName, userLastName, chatId));
-                    logger.info("пользователь сохранен в базу волонтеров");
+                    volunteerService.saveVolunteer(update);
+//
+                    sendMenuVolunteer(chatId, "Перед Вами меню волонтера");
+//                    logger.info("волонтеру отправлено меню");
                 } else {
                     userService.saveUser(update, false);
                 }
@@ -85,9 +114,7 @@ public class ShelterServiceImpl implements ShelterService {
                 int messageId = update.callbackQuery().message().messageId();
                 String receivedMessage = update.callbackQuery().data();
 
-//                if (receivedMessage.equals("Меню")) {
-//
-//                }
+
                 switch (receivedMessage) {
                     //Cтартовый блок
                     case "Меню" -> changeMessage(messageId, chatId, "Выберите запрос, который Вам подходит. " +
@@ -101,10 +128,14 @@ public class ShelterServiceImpl implements ShelterService {
 
 //                    break;
                     case "Как взять животное из приюта?" ->
-                            changeMessage(messageId, chatId, "Вы вернулись в начало!", buttons.takeAnimalButton());
+                            changeMessage(messageId, chatId, "Прежде, чем взять животное из приюта, ознакомьтесь с информацией," +
+                                    "которая представленна ниже", buttons.takeAnimalButton());
 
 
-                    case "Позвать волонтера" -> callAVolunteer(update);
+                    case "Позвать волонтера" -> {
+                        callAVolunteer(update);
+                        changeMessage(messageId, chatId, "Волонтер скоро свяжется с Вами", buttons.buttonMenu());
+                    }
 //                case "Прислать отчет о питомце" -> petReportSelection(messageId, chatId);
 
 //Блок "Информация о приюте"
@@ -113,7 +144,8 @@ public class ShelterServiceImpl implements ShelterService {
 //                case "Расписание работы приюта для собак" -> dogShelterWorkingHoursSelection(messageId, chatId);
 //                case "Контакты охраны приюта для собак" -> dogShelterSecurityContactSelection(messageId, chatId);
 //                case "Общие правила поведения" -> safetyRecommendationsSelection(messageId, chatId);
-//                case "Запись ваших контактов", "Запись контактов" -> recordingContactsSelection(messageId, chatId);
+                    case "Оставить телефон для связи" -> changeMessage(messageId, chatId,
+                            "Введите свой номер телефона в формате +71112223344", buttons.buttonMenu());
 //
 //
 // блок “Прислать отчет о питомце”
@@ -138,71 +170,94 @@ public class ShelterServiceImpl implements ShelterService {
             }
 
         }
-
+//        Pattern pattern = Pattern.compile("^(\\+7)([0-9]{10})$");
+//        if (update.message() != null && isCorrectNumber && pattern.matcher(update.message().text()).matches()) {
+//            userService.saveUser(update, false);
+//            userRepository.updateNumber(update.message().chat().id().intValue(), update.message().text());
+//            changeMessage(messageId, chatId, "Добро пожаловать в наш приют для собак!",
+//                    buttons.buttonsInformationAboutShelter());
+//
+//            executeSendMessage(new SendMessage(update.getMessage().getChatId().toString(), "номер записан вам обязательно позвонят"));
+//            isCorrectNumber = false;
+//        } else if (update.message() != null && isCorrectNumber && !pattern.matcher(update.message().text()).matches()) {
+//            executeSendMessage(new SendMessage(update.getMessage().getChatId().toString(), "не правильно набран номер повторите ещё раз"));
+//        }
     }
 
-    @Override
-    public void sendMessage(Long chatId, String messageText) {
-        logger.info("Был вызван метод для отправки сообщения", chatId, messageText);
-        SendMessage sendMessage = new SendMessage(chatId, messageText);
-        telegramBot.execute(sendMessage);
-    }
-
-    /**
-     * метод для отправки кнопки "Меню"
-     */
-    @Override
-    public void sendMenuButton(Long chatId, String messageText) {
-        logger.info("Был вызван метод для отправки кнопки Меню", chatId, messageText);
-        SendMessage sendMessage = new SendMessage(chatId, messageText);
-        sendMessage.replyMarkup(buttons.buttonMenu());
-        telegramBot.execute(sendMessage);
-    }
-
-    /**
-     * метод для отправки кнопок Этапа 0. Определение запроса
-     */
-    @Override
-    public void sendButtonsOfStep0(Long chatId, String messageText) {
-        logger.info("Был вызван метод для отправки кнопок 0 этапа", chatId, messageText);
-        SendMessage sendMessage = new SendMessage(chatId, messageText);
-        sendMessage.replyMarkup(buttons.buttonsOfStart());
-        telegramBot.execute(sendMessage);
-    }
-
-    /**
-     * метод для изменения сообщения
-     */
-    private void changeMessage(int messageId, long chatIdInButton, String messageText, InlineKeyboardMarkup keyboardMarkup) {
-        logger.info("Был вызван метод для изменения сообщения", messageId, chatIdInButton, messageText, keyboardMarkup);
-        EditMessageText editMessageText = new EditMessageText(chatIdInButton, messageId, messageText);
-
-        editMessageText.replyMarkup(keyboardMarkup);
-
-        telegramBot.execute(editMessageText);
-
-    }
-
-
-    /**
-     * Провека ввода /start
-     */
-    private boolean isStartEntered(Update update) {
-        return update.message().text() != null && update.message().text().equals("/start");
-    }
-
-    /**
-     * @param update Реализация кнопки "Позвать волонтера"
-     */
-    public void callAVolunteer(Update update) {
-        List<Volunteer> volunteerList = volunteerRepository.findAll();
-        for (Volunteer volunteer : volunteerList) {
-            String user = update.callbackQuery().from().username();
-            SendMessage sendMessage = new SendMessage(volunteer.getChatId(),
-                    "Пользователь: @" + user + " просит с ним связаться.");
+        @Override
+        public void sendMessage (Long chatId, String messageText){
+            logger.info("Был вызван метод для отправки сообщения", chatId, messageText);
+            SendMessage sendMessage = new SendMessage(chatId, messageText);
             telegramBot.execute(sendMessage);
         }
+
+        /**
+         * метод для отправки кнопки "Меню"
+         */
+        @Override
+        public void sendMenuButton (Long chatId, String messageText){
+            logger.info("Был вызван метод для отправки кнопки Меню", chatId, messageText);
+            SendMessage sendMessage = new SendMessage(chatId, messageText);
+            sendMessage.replyMarkup(buttons.buttonMenu());
+            telegramBot.execute(sendMessage);
+        }
+        /**
+         * метод для отправки кнопок "Меню волонтера"
+         */
+        @Override
+        public void sendMenuVolunteer (Long chatId, String messageText){
+            logger.info("Был вызван метод для отправки кнопок Меню волонтера", chatId, messageText);
+            SendMessage sendMessage = new SendMessage(chatId, messageText);
+            sendMessage.replyMarkup(buttons.buttonsOfVolunteer());
+            telegramBot.execute(sendMessage);
+        }
+        /**
+         * метод для отправки кнопок Этапа 0. Определение запроса
+         */
+        @Override
+        public void sendButtonsOfStep0 (Long chatId, String messageText){
+            logger.info("Был вызван метод для отправки кнопок 0 этапа", chatId, messageText);
+            SendMessage sendMessage = new SendMessage(chatId, messageText);
+            sendMessage.replyMarkup(buttons.buttonsOfStart());
+            telegramBot.execute(sendMessage);
+        }
+
+        /**
+         * метод для изменения сообщения
+         */
+        private void changeMessage ( int messageId, long chatIdInButton, String messageText, InlineKeyboardMarkup
+        keyboardMarkup){
+            logger.info("Был вызван метод для изменения сообщения", messageId, chatIdInButton, messageText, keyboardMarkup);
+            EditMessageText editMessageText = new EditMessageText(chatIdInButton, messageId, messageText);
+
+            editMessageText.replyMarkup(keyboardMarkup);
+
+            telegramBot.execute(editMessageText);
+
+        }
+
+
+        /**
+         * Провека ввода /start
+         */
+        private boolean isStartEntered (Update update){
+            return update.message().text() != null && update.message().text().equals("/start");
+        }
+
+        /**
+         * @param update Реализация кнопки "Позвать волонтера"
+         */
+        public void callAVolunteer (Update update){
+            List<Volunteer> volunteerList = volunteerRepository.findAll();
+            for (Volunteer volunteer : volunteerList) {
+                String user = update.callbackQuery().from().username();
+                SendMessage sendMessage = new SendMessage(volunteer.getChatId(),
+                        "Пользователь: @" + user + " просит с ним связаться.");
+                telegramBot.execute(sendMessage);
+            }
+        }
+
     }
-}
+
 
 

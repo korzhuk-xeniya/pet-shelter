@@ -19,13 +19,13 @@ public interface UserService {
     void deleteUser(Long id);
 
     //Проверить, если пользователь в бд по его chatId
-    boolean checkIdChatUser(int chatId);
+    boolean checkIdChatUser(long chatId);
 
     //Обновить пользователя в бд
     User updateUser(User user);
 
     //Получить юзера из бд
-    Optional<User> getUserByChatId(int chatId);
+    Optional<User> getUserByChatId(long chatId);
 
     /**
          * Поиск пользователя по chatId, если он есть то обновляем dateTimeToTook, если нет, создается новый пользователь

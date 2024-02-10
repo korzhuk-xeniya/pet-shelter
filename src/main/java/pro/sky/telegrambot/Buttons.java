@@ -77,6 +77,7 @@ public class Buttons {
                 );
     }
     public InlineKeyboardMarkup takeAnimalButton() {
+        logger.info("Был вызван метод создания кнопок Как взять животное из приюта");
         InlineKeyboardButton datingRulesButton = new InlineKeyboardButton("Правила знакомства");
         InlineKeyboardButton listOfDocumentsButton = new InlineKeyboardButton("Список документов");
         InlineKeyboardButton transportationButton = new InlineKeyboardButton("Рекомендации по транспортировке");
@@ -104,6 +105,22 @@ public class Buttons {
                 new InlineKeyboardButton[]{arrangementAdultButton},
                 new InlineKeyboardButton[]{transportationButton},
                 new InlineKeyboardButton[]{callVolunteerButton},
+                new InlineKeyboardButton[]{toStart});
+    }
+    /**
+     * Кнопки  волонтерской панели
+     */
+    public InlineKeyboardMarkup buttonsOfVolunteer(){
+        logger.info("Был вызван метод создания кнопок Волонтера");
+        InlineKeyboardButton reportButton = new InlineKeyboardButton("Просмотр отчетов");
+
+        InlineKeyboardButton toStart = new InlineKeyboardButton("В начало");
+
+
+        reportButton.callbackData("Просмотр отчетов");
+
+        toStart.callbackData("В начало");
+        return new InlineKeyboardMarkup(new InlineKeyboardButton[]{reportButton},
                 new InlineKeyboardButton[]{toStart});
     }
 //    public InlineKeyboardMarkup shelterInformationButton() {

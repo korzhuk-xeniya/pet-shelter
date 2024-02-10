@@ -34,7 +34,7 @@ public class User {
     private LocalDateTime dateTimeToTook;
 
     @Column(name = "chat_id")
-    private int chatId;
+    private long chatId;
 
     @Column(name = "telephone_number")
     private String number;
@@ -44,7 +44,7 @@ public class User {
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     private List<Report> reports = new ArrayList<>();
 
-    public User(String firstName, Boolean tookAPet, int chatId, LocalDateTime dateTimeToTook) {
+    public User(String firstName, Boolean tookAPet, long chatId, LocalDateTime dateTimeToTook) {
         this.firstName = firstName;
         this.tookAPet = tookAPet;
         this.chatId = chatId;
@@ -75,11 +75,11 @@ public class User {
         this.tookAPet = tookAPet;
     }
 
-    public int getChatId() {
+    public long getChatId() {
         return chatId;
     }
 
-    public void setChatId(int chatId) {
+    public void setChatId(long chatId) {
         this.chatId = chatId;
     }
 

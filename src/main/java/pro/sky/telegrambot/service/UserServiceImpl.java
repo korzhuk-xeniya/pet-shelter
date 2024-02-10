@@ -35,7 +35,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     //Проверить, если пользователь в бд по его chatId
-    public boolean checkIdChatUser(int chatId) {
+    public boolean checkIdChatUser(long chatId) {
         logger.info("Был вызван метод для поиска  пользователя в базе данных", chatId);
         return userRepository.existsByChatId(chatId);
     }
@@ -50,7 +50,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     //Получить юзера из бд
-    public Optional<User> getUserByChatId(int chatId) {
+    public Optional<User> getUserByChatId(long chatId) {
         logger.info("Был вызван метод для получения пользователя из базы данных", chatId);
         return userRepository.findByChatId(chatId);
     }
