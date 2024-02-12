@@ -150,21 +150,7 @@ public class ShelterServiceImpl implements ShelterService {
                     case "Оставить телефон для связи" -> {
                         changeMessage(messageId, chatId,
                                 "Введите свой номер телефона в формате +71112223344", buttons.buttonMenu());
-//                        Matcher matcher = MESSAGE_PATTERN.matcher(message);
-//                        if (update.message() != null && matcher.find()) {
-//                            userRepository.updateNumber(update.message().chat().id().intValue(), update.message().text());
-//                            userService.saveUser(update, false);
-//                            sendMenuButton(chatId, "Номер записан, Вам обязательно позвонят!");
 //
-//                            changeMessage(messageId, chatId, "Номер записан, Вам обязательно позвонят!",
-//                                    buttons.buttonMenu());
-//
-//                            isCorrectNumber = false;
-//                        } else if
-//                        (update.message() != null && !update.message().text().equals("/start") && !matcher.find()) {
-//                            sendMessage(chatId, "Номер введен в некорректном формате. Введите номер в формате +71112223344.");
-//
-//                        }
                     }
 //
 //
