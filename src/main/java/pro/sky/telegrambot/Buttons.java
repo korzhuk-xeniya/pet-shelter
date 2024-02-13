@@ -1,7 +1,6 @@
 package pro.sky.telegrambot;
 
 
-
 import com.pengrad.telegrambot.model.request.InlineKeyboardButton;
 import com.pengrad.telegrambot.model.request.InlineKeyboardMarkup;
 import com.pengrad.telegrambot.model.request.Keyboard;
@@ -15,12 +14,14 @@ import java.util.List;
 @Component
 public class Buttons {
     private final Logger logger = LoggerFactory.getLogger(Buttons.class);
+
     public InlineKeyboardMarkup buttonMenu() {
         logger.info("Был вызван метод создания кнопки Меню");
         InlineKeyboardButton menuButton = new InlineKeyboardButton("Меню");
         menuButton.callbackData("Меню");
         return new InlineKeyboardMarkup(new InlineKeyboardButton[]{menuButton});
     }
+
     public InlineKeyboardMarkup buttonsOfStart() {
         logger.info("Был вызван метод создания кнопок 0 этапа");
         InlineKeyboardButton checkInfoButton = new InlineKeyboardButton("Информация о приюте");
@@ -40,6 +41,7 @@ public class Buttons {
                 new InlineKeyboardButton[]{callVolunteerButton},
                 new InlineKeyboardButton[]{toStart});
     }
+
     public InlineKeyboardMarkup buttonsInformationAboutShelter() {
         logger.info("Был вызван метод создания кнопок Инфомация о приюте");
         InlineKeyboardButton aboutShelterButton = new InlineKeyboardButton("О приюте");
@@ -69,14 +71,15 @@ public class Buttons {
                 ,
                 new InlineKeyboardButton[]{locationMapButton}
                 ,
-              new InlineKeyboardButton[]{securityButton}
+                new InlineKeyboardButton[]{securityButton}
                 ,
                 new InlineKeyboardButton[]{safetyButton},
                 new InlineKeyboardButton[]{leavePhoneNumberButton},
                 new InlineKeyboardButton[]{callVolunteerButton},
                 new InlineKeyboardButton[]{toStart}
-                );
+        );
     }
+
     public InlineKeyboardMarkup takeAnimalButton() {
         logger.info("Был вызван метод создания кнопок Как взять животное из приюта");
         InlineKeyboardButton datingRulesButton = new InlineKeyboardButton("Правила знакомства");
@@ -111,10 +114,11 @@ public class Buttons {
                 new InlineKeyboardButton[]{callVolunteerButton},
                 new InlineKeyboardButton[]{toStart});
     }
+
     /**
      * Кнопки  волонтерской панели
      */
-    public InlineKeyboardMarkup buttonsOfVolunteer(){
+    public InlineKeyboardMarkup buttonsOfVolunteer() {
         logger.info("Был вызван метод создания кнопок Волонтера");
         InlineKeyboardButton reportButton = new InlineKeyboardButton("Просмотр отчетов");
 
@@ -130,15 +134,11 @@ public class Buttons {
 
     public InlineKeyboardMarkup buttonOfChooseAnimal() {
         logger.info("Был вызван метод создания кнопок Выбрать животное");
-        InlineKeyboardButton chooseButton = new InlineKeyboardButton("Выбрать животное");
-
+        InlineKeyboardButton tookButton = new InlineKeyboardButton("Взять животное");
         InlineKeyboardButton toStart = new InlineKeyboardButton("В начало");
-
-
-        chooseButton.callbackData("Просмотр отчетов");
-
+        tookButton.callbackData("Взять животное");
         toStart.callbackData("В начало");
-        return new InlineKeyboardMarkup(new InlineKeyboardButton[]{chooseButton});
+        return new InlineKeyboardMarkup(new InlineKeyboardButton[]{tookButton});
     }
 //    public InlineKeyboardMarkup shelterInformationButton() {
 //        InlineKeyboardButton safetyRecommendationsButton = new InlineKeyboardButton("Общие правила поведения");

@@ -59,6 +59,7 @@ public class ShelterServiceImpl implements ShelterService {
     @Override
     public void process(Update update) {
         List<String> adminsVolunteers = new ArrayList<>();
+        adminsVolunteers.add("xeny_sk");
         adminsVolunteers.add("d_prudnikov");
 
 //        sendMessage(update.message().chat().id(), "для начала работы, отправь /start");
@@ -156,20 +157,28 @@ public class ShelterServiceImpl implements ShelterService {
 
                         }
                     }
-//                case "Прислать отчет о питомце" -> petReportSelection(messageId, chatId);
+                    case "Взять животное" ->{
+                        callAVolunteerForConfirmationOfSelection(update);
+                        changeMessage(messageId, chatId,
+                                "Волонтер скоро свяжется с Вами, чтобы подтвердить Ваш выбор",
+                                buttons.buttonMenu());
+                    }
 
-//Блок "Информация о приюте"
+
 //
-//                case "Информация о приюте для собак" -> aboutDogShelterSelection(messageId, chatId);
-//                case "Расписание работы приюта для собак" -> dogShelterWorkingHoursSelection(messageId, chatId);
-//                case "Контакты охраны приюта для собак" -> dogShelterSecurityContactSelection(messageId, chatId);
-//                case "Общие правила поведения" -> safetyRecommendationsSelection(messageId, chatId);
                     case "Оставить телефон для связи" -> {
                         changeMessage(messageId, chatId,
                                 "Введите свой номер телефона в формате +71112223344", buttons.buttonMenu());
 //
                     }
+//case "Прислать отчет о питомце" -> petReportSelection(messageId, chatId);
 //
+////Блок "Информация о приюте"
+////
+////                case "Информация о приюте для собак" -> aboutDogShelterSelection(messageId, chatId);
+////                case "Расписание работы приюта для собак" -> dogShelterWorkingHoursSelection(messageId, chatId);
+////                case "Контакты охраны приюта для собак" -> dogShelterSecurityContactSelection(messageId, chatId);
+////                case "Общие правила поведения" -> safetyRecommendationsSelection(messageId, chatId);
 //
 // блок “Прислать отчет о питомце”
 //                case "Форма ежедневного отчета" -> {
@@ -284,11 +293,27 @@ public class ShelterServiceImpl implements ShelterService {
      * @param update Реализация кнопки "Позвать волонтера"
      */
     public void callAVolunteer(Update update) {
+        logger.info("Был вызван метод для вызова волонтера", update);
         List<Volunteer> volunteerList = volunteerRepository.findAll();
         for (Volunteer volunteer : volunteerList) {
             String user = update.callbackQuery().from().username();
             SendMessage sendMessage = new SendMessage(volunteer.getChatId(),
                     "Пользователь: @" + user + " просит с ним связаться.");
+            telegramBot.execute(sendMessage);
+        }
+    }
+
+    /**
+     * @param update
+     * Отправка запроса на подтверждение выбора животного волонтером
+     */
+    public void callAVolunteerForConfirmationOfSelection(Update update) {
+        logger.info("Был вызван метод для отправки запроса волонтеру на подтверждение выбора животного", update);
+        List<Volunteer> volunteerList = volunteerRepository.findAll();
+        for (Volunteer volunteer : volunteerList) {
+            String user = update.callbackQuery().from().username();
+            SendMessage sendMessage = new SendMessage(volunteer.getChatId(),
+                    "Пользователь: @" + user + " хочет усыновить животное.");
             telegramBot.execute(sendMessage);
         }
     }
