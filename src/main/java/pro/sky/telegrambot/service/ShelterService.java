@@ -13,5 +13,7 @@ public interface ShelterService {
 
     void sendMenuVolunteer(Long chatId, String messageText);
 
+    void sendButtonChooseAnimal(Long chatId, String messageText);
+
     void sendButtonsOfStep0(Long chatId, String messageText);
 }

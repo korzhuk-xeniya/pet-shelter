@@ -10,7 +10,7 @@ public class AnimalServiceImpl implements AnimalService {
 
 
     private final AnimalRepository animalRepository;
-//    private final Animal animal;
+
 
     public AnimalServiceImpl(AnimalRepository animalRepository) {
         this.animalRepository = animalRepository;
@@ -42,9 +42,9 @@ public class AnimalServiceImpl implements AnimalService {
 //             создается новый объект животного.
 //             передаётся ему ID существующего животного, которого необходимо отредактировать
 //             передаются новые параметры для животного
-        Animal savedAnimal = new Animal(animal.getAgeMonth(), animal.getNameOfAnimal(), animal.getPhotoLink(),
+        Animal savedAnimal = new Animal(id, animal.getAgeMonth(), animal.getNameOfAnimal(), animal.getPhotoLink(),
                 animal.getGender(), animal.getPetType());
-            return animalRepository.save(animal);
+            return animalRepository.save(savedAnimal);
         }
 
         /**

@@ -2,6 +2,7 @@ package pro.sky.telegrambot.model;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import javax.persistence.*;
@@ -37,15 +38,31 @@ public class Animal {
     @JoinColumn(name = "user_id")
     private User user;
 
-    public Animal(long ageMonth, String name, String photoLink, String gender, String petType) {
+    public Animal(long ageMonth, String nameOfAnimal, String photoLink, String gender, String petType) {
         this.ageMonth = ageMonth;
-        this.nameOfAnimal = name;
+        this.nameOfAnimal = nameOfAnimal;
         this.photoLink = photoLink;
         this.gender = gender;
         this.petType = petType;
     }
 
+    public Animal(long id, long ageMonth, String nameOfAnimal, String photoLink, String gender, String petType) {
+        this.id = id;
+        this.ageMonth = ageMonth;
+        this.nameOfAnimal = nameOfAnimal;
+        this.photoLink = photoLink;
+        this.gender = gender;
+        this.petType = petType;
+    }
 
+    public Animal() {
+
+        ageMonth = 0;
+        nameOfAnimal = null;
+        photoLink = null;
+        gender = null;
+        petType = null;
+    }
 
     public User getUser() {
         return user;

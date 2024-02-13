@@ -9,6 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import pro.sky.telegrambot.Buttons;
+import pro.sky.telegrambot.model.Animal;
 import pro.sky.telegrambot.model.Volunteer;
 import pro.sky.telegrambot.repository.ShelterRepository;
 import pro.sky.telegrambot.repository.UserRepository;
@@ -29,13 +30,18 @@ public class ShelterServiceImpl implements ShelterService {
     private final Buttons buttons;
     private final UserService userService;
     private final VolunteerService volunteerService;
+    private final AnimalService animalService;
     private final Logger logger = LoggerFactory.getLogger(ShelterServiceImpl.class);
+
     private boolean isCorrectNumber = false;
     private static final Pattern MESSAGE_PATTERN = Pattern.compile("^(\\+7)([0-9]{10})$");
 //   @Value(value = "${telegram.bot.admins}")
 //    private List<String> admins;
 
-    public ShelterServiceImpl(TelegramBot telegramBot, ShelterRepository repository, VolunteerRepository volunteerRepository, Buttons buttons, UserService userService, VolunteerService volunteerService, List<String> admins, UserRepository userRepository) {
+    public ShelterServiceImpl(TelegramBot telegramBot, ShelterRepository repository,
+                              VolunteerRepository volunteerRepository, Buttons buttons, UserService userService,
+                              VolunteerService volunteerService, UserRepository userRepository,
+                              AnimalService animalService) {
         this.telegramBot = telegramBot;
         this.repository = repository;
         this.volunteerRepository = volunteerRepository;
@@ -45,6 +51,8 @@ public class ShelterServiceImpl implements ShelterService {
 
 //        this.admins = admins;
         this.userRepository = userRepository;
+        this.animalService = animalService;
+//
     }
 
 
@@ -78,7 +86,7 @@ public class ShelterServiceImpl implements ShelterService {
             } else if
             (update.message() != null && !update.message().text().equals("/start") && !matcher.find()) {
                 logger.info("пользователь отправил  сообщение  с неопределенным содержанием");
-                sendMessage(chatId,"Содержание не определено.");
+                sendMessage(chatId, "Содержание не определено.");
                 return;
 
             }
@@ -138,6 +146,15 @@ public class ShelterServiceImpl implements ShelterService {
                     case "Позвать волонтера" -> {
                         callAVolunteer(update);
                         changeMessage(messageId, chatId, "Волонтер скоро свяжется с Вами", buttons.buttonMenu());
+                    }
+                    case "Выбрать животное" -> {
+                        List<Animal> animalList = new ArrayList<Animal>(animalService.allAnimals());
+                        for (Animal animal2 : animalList) {
+                            sendButtonChooseAnimal(chatId, "Кличка животного:" + animal2.getNameOfAnimal() +
+                                    "; Возраст: " + animal2.getAgeMonth() + " месяцев; Тип животного: " +
+                                    animal2.getPetType() + ";Фото:" + animal2.getPhotoLink());
+
+                        }
                     }
 //                case "Прислать отчет о питомце" -> petReportSelection(messageId, chatId);
 
@@ -220,6 +237,17 @@ public class ShelterServiceImpl implements ShelterService {
     }
 
     /**
+     * метод для отправки кнопок "Выбрать животное"
+     */
+    @Override
+    public void sendButtonChooseAnimal(Long chatId, String messageText) {
+        logger.info("Был вызван метод для отправки кнопок Выбора животного", chatId, messageText);
+        SendMessage sendMessage = new SendMessage(chatId, messageText);
+        sendMessage.replyMarkup(buttons.buttonOfChooseAnimal());
+        telegramBot.execute(sendMessage);
+    }
+
+    /**
      * метод для отправки кнопок Этапа 0. Определение запроса
      */
     @Override
@@ -264,6 +292,7 @@ public class ShelterServiceImpl implements ShelterService {
             telegramBot.execute(sendMessage);
         }
     }
+
 
 }
 

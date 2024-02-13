@@ -4,6 +4,7 @@ package pro.sky.telegrambot;
 
 import com.pengrad.telegrambot.model.request.InlineKeyboardButton;
 import com.pengrad.telegrambot.model.request.InlineKeyboardMarkup;
+import com.pengrad.telegrambot.model.request.Keyboard;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -85,6 +86,7 @@ public class Buttons {
         InlineKeyboardButton arrangementAdultButton = new InlineKeyboardButton("Обустройство для взрослой собаки");
         InlineKeyboardButton arrangementDisabledButton = new InlineKeyboardButton("Животное с ОВЗ");
         InlineKeyboardButton whyRefuseButton = new InlineKeyboardButton("Причины отказа");
+        InlineKeyboardButton chooseAnimalButton = new InlineKeyboardButton("Выбрать животное");
         InlineKeyboardButton callVolunteerButton = new InlineKeyboardButton("Позвать волонтера");
         InlineKeyboardButton toStart = new InlineKeyboardButton("В начало");
 
@@ -95,6 +97,7 @@ public class Buttons {
         transportationButton.callbackData("Рекомендации по транспортировке");
         arrangementDisabledButton.callbackData("Животное с ОВЗ");
         whyRefuseButton.callbackData("Причины отказа");
+        chooseAnimalButton.callbackData("Выбрать животное");
         callVolunteerButton.callbackData("Позвать волонтера");
         toStart.callbackData("В начало");
         return new InlineKeyboardMarkup(new InlineKeyboardButton[]{datingRulesButton},
@@ -104,6 +107,7 @@ public class Buttons {
                 new InlineKeyboardButton[]{arrangementPuppyButton},
                 new InlineKeyboardButton[]{arrangementAdultButton},
                 new InlineKeyboardButton[]{transportationButton},
+                new InlineKeyboardButton[]{chooseAnimalButton},
                 new InlineKeyboardButton[]{callVolunteerButton},
                 new InlineKeyboardButton[]{toStart});
     }
@@ -122,6 +126,19 @@ public class Buttons {
         toStart.callbackData("В начало");
         return new InlineKeyboardMarkup(new InlineKeyboardButton[]{reportButton},
                 new InlineKeyboardButton[]{toStart});
+    }
+
+    public InlineKeyboardMarkup buttonOfChooseAnimal() {
+        logger.info("Был вызван метод создания кнопок Выбрать животное");
+        InlineKeyboardButton chooseButton = new InlineKeyboardButton("Выбрать животное");
+
+        InlineKeyboardButton toStart = new InlineKeyboardButton("В начало");
+
+
+        chooseButton.callbackData("Просмотр отчетов");
+
+        toStart.callbackData("В начало");
+        return new InlineKeyboardMarkup(new InlineKeyboardButton[]{chooseButton});
     }
 //    public InlineKeyboardMarkup shelterInformationButton() {
 //        InlineKeyboardButton safetyRecommendationsButton = new InlineKeyboardButton("Общие правила поведения");
