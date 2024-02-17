@@ -4,15 +4,18 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.springframework.stereotype.Component;
 
 import javax.persistence.*;
 import java.util.Objects;
 
+
 @Getter
 @Setter
 @AllArgsConstructor
-//@NoArgsConstructor
+@NoArgsConstructor(force = true)
 @Entity
+@Component
 @Table(name = "animals")
 public class Animal {
 
@@ -37,8 +40,8 @@ public class Animal {
     //Тип животного
     private final String petType;
     @OneToOne
-    @JoinColumn(name = "user_id")
-    private long userId;
+//    @JoinColumn(name = "user_id")
+    private User user;
 
     public Animal(long ageMonth, String nameOfAnimal, String photoLink, String gender, String petType) {
         this.ageMonth = ageMonth;
@@ -57,51 +60,22 @@ public class Animal {
         this.petType = petType;
     }
 
-    public Animal() {
+//    public Animal() {
+//
+//        ageMonth = 0;
+//        nameOfAnimal = null;
+//        photoLink = null;
+//        gender = null;
+//        petType = null;
+//    }
 
-        ageMonth = 0;
-        nameOfAnimal = null;
-        photoLink = null;
-        gender = null;
-        petType = null;
-    }
-
-
-
-    public long getId() {
-        return id;
-    }
 
     public void setId(long id) {
         this.id = id;
     }
 
-    public long getAgeMonth() {
-        return ageMonth;
-    }
-
-    public String getNameOfAnimal() {
-        return nameOfAnimal;
-    }
-
-    public String getPhotoLink() {
-        return photoLink;
-    }
-
-    public String getGender() {
-        return gender;
-    }
-
-    public String getPetType() {
-        return petType;
-    }
-
-    public long getUserId() {
-        return userId;
-    }
-
-    public void setUserId(long userId) {
-        this.userId = userId;
+    public void setUser(User user) {
+        this.user = user;
     }
 
     @Override
@@ -113,7 +87,7 @@ public class Animal {
                 ", photoLink='" + photoLink + '\'' +
                 ", gender='" + gender + '\'' +
                 ", petType='" + petType + '\'' +
-                ", userId=" + userId +
+                ", user=" + user +
                 '}';
     }
 
@@ -122,12 +96,17 @@ public class Animal {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Animal animal = (Animal) o;
-        return id == animal.id && ageMonth == animal.ageMonth && userId == animal.userId && Objects.equals(nameOfAnimal, animal.nameOfAnimal) && Objects.equals(photoLink, animal.photoLink) && Objects.equals(gender, animal.gender) && Objects.equals(petType, animal.petType);
+        return id == animal.id && ageMonth == animal.ageMonth && user == animal.user &&
+                Objects.equals(nameOfAnimal, animal.nameOfAnimal) &&
+                Objects.equals(photoLink, animal.photoLink) &&
+                Objects.equals(gender, animal.gender) &&
+                Objects.equals(petType, animal.petType);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, ageMonth, nameOfAnimal, photoLink, gender, petType, userId);
+        return Objects.hash(id, ageMonth, nameOfAnimal,
+                photoLink, gender, petType, user);
     }
 }
 

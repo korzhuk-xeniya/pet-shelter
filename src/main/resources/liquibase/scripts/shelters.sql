@@ -25,8 +25,9 @@ CREATE TABLE report_tg
     date_added         TIMESTAMP,
     general_well_being TEXT,
     photo_name         TEXT,
-    user_id            BIGINT references user_tg (id) on delete set null,
-    check_report       bool
+    check_report       boolean,
+    user_id            BIGINT references user_tg (id) on delete set null
+
 );
 
 CREATE TABLE volunteers

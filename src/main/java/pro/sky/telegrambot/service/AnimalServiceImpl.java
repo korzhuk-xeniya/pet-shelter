@@ -1,22 +1,31 @@
 package pro.sky.telegrambot.service;
 
+import com.pengrad.telegrambot.model.Update;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import pro.sky.telegrambot.model.Animal;
 import pro.sky.telegrambot.model.User;
 import pro.sky.telegrambot.repository.AnimalRepository;
+import pro.sky.telegrambot.repository.UserRepository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class AnimalServiceImpl implements AnimalService {
 
-
+    private final Logger logger = LoggerFactory.getLogger(UserServiceImpl.class);
     private final AnimalRepository animalRepository;
-    private final User user;
+    private final UserRepository userRepository;
+    private final UserService userService;
+//    private final User user;
 
-    public AnimalServiceImpl(AnimalRepository animalRepository, User user) {
+    public AnimalServiceImpl(AnimalRepository animalRepository, UserRepository userRepository, UserService userService) {
         this.animalRepository = animalRepository;
-        this.user = user;
+//        this.user = user;
+        this.userRepository = userRepository;
+        this.userService = userService;
     }
 
 
@@ -25,6 +34,7 @@ public class AnimalServiceImpl implements AnimalService {
      */
     @Override
     public Animal add(Animal animal) {
+        logger.info("Был вызван метод для добавления нового животного в базу данных", animal);
         return animalRepository.save(animal);
     }
 
@@ -33,15 +43,17 @@ public class AnimalServiceImpl implements AnimalService {
      */
     @Override
     public Animal get(long id) {
+        logger.info("Был вызван метод для получения животного по id", id);
         return animalRepository.findById(id).orElse(null);
 
     }
 
     /**
-     * Метод обновления ифнормации о животном.
+     * Метод обновления информации о животном.
      */
     @Override
     public Animal update(Long id, Animal animal) {
+        logger.info("Был вызван метод для обновления животного в базе данных", animal);
 //             создается новый объект животного.
 //             передаётся ему ID существующего животного, которого необходимо отредактировать
 //             передаются новые параметры для животного
@@ -69,11 +81,26 @@ public class AnimalServiceImpl implements AnimalService {
         return animalRepository.findAll();
     }
 
+//    @Override
+//    public void updateUserId(User user, Animal animal) {
+////        new Animal();
+////        Animal animal = (animalRepository.findById(animalId).orElse(null));
+//        animal.setUser(user);
+//    }
     @Override
-    public void updateUserId(User user, long animalId) {
-        new Animal();
-        Animal animal = (animalRepository.findById(animalId).orElse(null));
-        animal.setUserId(user.getId());
+    /**
+     * Поиск пользователя по chatId, если он есть то добавляем к животному
+     */
+    public void saveUserIdInAnimal(Update update, Animal animal) {
+        logger.info("Был вызван метод для усыновителя животного в базе данных",update, animal);
+        int chatId = update.message().chat().id().intValue();
+        Optional<User> userOptional = userService.getUserByChatId(chatId);
+        if (userOptional.isPresent()) {
+            User user = userOptional.get();
+            Animal pet = new Animal(animal.getId(), animal.getAgeMonth(), animal.getNameOfAnimal(),
+                    animal.getPhotoLink(), animal.getGender(), animal.getPetType(),user);
+            animalRepository.save(pet);
+        }
     }
 
 }

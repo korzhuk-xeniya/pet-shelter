@@ -65,10 +65,12 @@ public class UserServiceImpl implements UserService {
         if (userOptional.isPresent()) {
             User user = userOptional.get();
             user.setDateTimeToTook(LocalDateTime.now());
+            user.setTookAPet(tookAPET);
             updateUser(user);
         } else {
             User newUser = new User(update.message().from().firstName(),tookAPET,chatId, LocalDateTime.now());
             userAdd(newUser);
+            newUser.setTookAPet(tookAPET);
         }
     }
 }

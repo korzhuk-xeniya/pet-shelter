@@ -34,13 +34,14 @@ public class ShelterServiceImpl implements ShelterService {
     private final AnimalService animalService;
     private final Logger logger = LoggerFactory.getLogger(ShelterServiceImpl.class);
 
-    private boolean isCorrectNumber = false;
+    //    private boolean isCorrectNumber = false;
     private static final Pattern MESSAGE_PATTERN = Pattern.compile("^(\\+7)([0-9]{10})$");
 //   @Value(value = "${telegram.bot.admins}")
 //    private List<String> admins;
 
     public ShelterServiceImpl(TelegramBot telegramBot, ShelterRepository repository,
-                              Animal animal, VolunteerRepository volunteerRepository, Buttons buttons, UserService userService,
+                              Animal animal, VolunteerRepository volunteerRepository,
+                              Buttons buttons, UserService userService,
                               VolunteerService volunteerService, UserRepository userRepository,
                               AnimalService animalService) {
         this.telegramBot = telegramBot;
@@ -61,7 +62,7 @@ public class ShelterServiceImpl implements ShelterService {
     @Override
     public void process(Update update) {
         List<String> adminsVolunteers = new ArrayList<>();
-//        adminsVolunteers.add("xeny_sk");
+        adminsVolunteers.add("xeny_sk");
         adminsVolunteers.add("d_prudnikov");
 
 //        sendMessage(update.message().chat().id(), "для начала работы, отправь /start");
@@ -83,16 +84,16 @@ public class ShelterServiceImpl implements ShelterService {
                 userRepository.updateNumber(update.message().chat().id().intValue(), update.message().text());
                 userService.saveUser(update, false);
                 sendMenuButton(chatId, "Номер записан, Вам обязательно позвонят!");
-
-
-                isCorrectNumber = false;
-            } else if
-            (update.message() != null && !update.message().text().equals("/start") && !matcher.find()) {
-                logger.info("пользователь отправил  сообщение  с неопределенным содержанием");
-                sendMessage(chatId, "Содержание не определено.");
-                return;
-
             }
+
+
+//            } else if
+//            (update.message() != null && !update.message().text().equals("/start") && !matcher.find()) {
+//                logger.info("пользователь отправил  сообщение  с неопределенным содержанием");
+//                sendMessage(chatId, "Содержание не определено.");
+//                return;
+//
+//            }
 //            else
 //            if  ((!update.message().text().equals("/start")) && (!matcher.find())) {
 //                logger.info("пользователь отправил  сообщение  с неопределенным содержанием");
@@ -101,8 +102,7 @@ public class ShelterServiceImpl implements ShelterService {
 //                sendMessage(chatId, "для начала работы, отправь /start");
 //                return;
 //            }
-//            Pattern pattern = Pattern.compile("^(\\+7)([0-9]{10})$");
-//            Pattern pattern = Pattern.compile("^\\+?[1-9][0-9]{7,14}$");
+//
 
             if (update.message().text().equals("/start")) {
                 logger.info("пользователь отправил /start");
@@ -118,9 +118,14 @@ public class ShelterServiceImpl implements ShelterService {
                     userService.saveUser(update, false);
                 }
             }
-            for (Animal pet:animalService.allAnimals()) {
-                if(update.message().text().equals(animal.getNameOfAnimal())) {
-
+            List<Animal> animalList1 = new ArrayList<Animal>(animalService.allAnimals());
+            for (Animal pet : animalList1) {
+                if (update.message().text().equals(pet.getNameOfAnimal().toString())) {
+                    sendMessage(chatId,
+                            "Волонтер скоро свяжется с Вами, чтобы подтвердить Ваш выбор");
+                    callAVolunteerForConfirmationOfSelection(update, pet);
+                    userService.saveUser(update, true);
+                    animalService.saveUserIdInAnimal(update, pet);
                 }
             }
         } else {
@@ -164,18 +169,16 @@ public class ShelterServiceImpl implements ShelterService {
 
                         }
                     }
-                    case "Взять животное" ->{
-                        sendMessageByUserId(update, userId,"Отправьте кличку животного" );
-                    }
+                    case "Взять животное" -> {
+                        changeMessage(messageId, chatId, "Отправьте кличку животного.", buttons.buttonMenu());
 
 
-//                    {
 //                        callAVolunteerForConfirmationOfSelection(update);
-//                        changeMessage(messageId, chatId,
-//                                "Волонтер скоро свяжется с Вами, чтобы подтвердить Ваш выбор",
-//                                buttons.buttonMenu());
-////                        userService.saveUser(update, true);
-//                    }
+////                        changeMessage(messageId, chatId,
+////                                ",
+////                                buttons.buttonMenu());
+//                        userService.saveUser(update, true);
+                    }
 
 
 //
@@ -236,6 +239,7 @@ public class ShelterServiceImpl implements ShelterService {
         SendMessage sendMessage = new SendMessage(chatId, messageText);
         telegramBot.execute(sendMessage);
     }
+
     @Override
     public void sendMessageByUserId(Update update, Long userID, String messageText) {
         logger.info("Был вызван метод для отправки сообщения по id", userID, messageText);
@@ -324,16 +328,16 @@ public class ShelterServiceImpl implements ShelterService {
     }
 
     /**
-     * @param update
-     * Отправка запроса на подтверждение выбора животного волонтером
+     * @param update Отправка запроса на подтверждение выбора животного волонтером
      */
-    public void callAVolunteerForConfirmationOfSelection(Update update) {
+    public void callAVolunteerForConfirmationOfSelection(Update update, Animal pet) {
         logger.info("Был вызван метод для отправки запроса волонтеру на подтверждение выбора животного", update);
         List<Volunteer> volunteerList = volunteerRepository.findAll();
         for (Volunteer volunteer : volunteerList) {
-            String user = update.callbackQuery().from().username();
+            String user = update.message().from().username();
             SendMessage sendMessage = new SendMessage(volunteer.getChatId(),
-                    "Пользователь: @" + user + " хочет усыновить животное.");
+                    "Пользователь: @" + user + " хочет усыновить животное " + pet.getNameOfAnimal() + " id: "+
+                    pet.getId());
             telegramBot.execute(sendMessage);
         }
     }

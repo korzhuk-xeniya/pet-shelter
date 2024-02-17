@@ -39,8 +39,6 @@ public class User {
     @Column(name = "telephone_number")
     private String number;
 
-
-
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     private List<Report> reports = new ArrayList<>();
 
