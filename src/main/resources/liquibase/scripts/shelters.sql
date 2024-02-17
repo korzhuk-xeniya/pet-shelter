@@ -44,7 +44,7 @@ CREATE TABLE animals
    name_of_animal     TEXT   ,
    gender            TEXT ,
    photo_link     TEXT   ,
-   pet_type         TEXT   ,
+   pet_type         TEXT  ,
     user_id          BIGINT   references user_tg (id) on delete set null
 
 );
@@ -53,3 +53,13 @@ INSERT INTO animals
 VALUES ('Барсик','м', 5, 'щенок', 'https://img-fotki.yandex.ru/get/6444/28699592.23/0_8fe45_9f57d864_XL.jpg'),
 ('Джеси','ж', 15, 'собака', 'https://k9rl.com/wp-content/uploads/2015/11/Beagle-1-825x491.jpg'),
 ('Альма','ж', 34, 'собака с ОВЗ', 'https://storage.myseldon.com/news-pict-7d/7D80726A97A8592B932E12D049072EEB');
+
+
+SELECT report_tg.user_id
+FROM report_tg
+INNER JOIN user_tg ON report_tg.user_id = user_tg.id;
+
+SELECT user_tg.id
+FROM user_tg
+INNER JOIN animals  ON  user_tg.id = animals.user_id;
+--user_tg.id = animals.user_id;

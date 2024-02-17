@@ -25,6 +25,7 @@ import java.util.regex.Pattern;
 public class ShelterServiceImpl implements ShelterService {
     private final TelegramBot telegramBot;
     private final ShelterRepository repository;
+    private final Animal animal;
     private final VolunteerRepository volunteerRepository;
     private final UserRepository userRepository;
     private final Buttons buttons;
@@ -39,11 +40,12 @@ public class ShelterServiceImpl implements ShelterService {
 //    private List<String> admins;
 
     public ShelterServiceImpl(TelegramBot telegramBot, ShelterRepository repository,
-                              VolunteerRepository volunteerRepository, Buttons buttons, UserService userService,
+                              Animal animal, VolunteerRepository volunteerRepository, Buttons buttons, UserService userService,
                               VolunteerService volunteerService, UserRepository userRepository,
                               AnimalService animalService) {
         this.telegramBot = telegramBot;
         this.repository = repository;
+        this.animal = animal;
         this.volunteerRepository = volunteerRepository;
         this.buttons = buttons;
         this.userService = userService;
@@ -59,7 +61,7 @@ public class ShelterServiceImpl implements ShelterService {
     @Override
     public void process(Update update) {
         List<String> adminsVolunteers = new ArrayList<>();
-        adminsVolunteers.add("xeny_sk");
+//        adminsVolunteers.add("xeny_sk");
         adminsVolunteers.add("d_prudnikov");
 
 //        sendMessage(update.message().chat().id(), "для начала работы, отправь /start");
@@ -116,6 +118,11 @@ public class ShelterServiceImpl implements ShelterService {
                     userService.saveUser(update, false);
                 }
             }
+            for (Animal pet:animalService.allAnimals()) {
+                if(update.message().text().equals(animal.getNameOfAnimal())) {
+
+                }
+            }
         } else {
             if (update.callbackQuery() != null) {
                 logger.info("пользователь нажал на кнопку");
@@ -158,11 +165,17 @@ public class ShelterServiceImpl implements ShelterService {
                         }
                     }
                     case "Взять животное" ->{
-                        callAVolunteerForConfirmationOfSelection(update);
-                        changeMessage(messageId, chatId,
-                                "Волонтер скоро свяжется с Вами, чтобы подтвердить Ваш выбор",
-                                buttons.buttonMenu());
+                        sendMessageByUserId(update, userId,"Отправьте кличку животного" );
                     }
+
+
+//                    {
+//                        callAVolunteerForConfirmationOfSelection(update);
+//                        changeMessage(messageId, chatId,
+//                                "Волонтер скоро свяжется с Вами, чтобы подтвердить Ваш выбор",
+//                                buttons.buttonMenu());
+////                        userService.saveUser(update, true);
+//                    }
 
 
 //
@@ -198,6 +211,7 @@ public class ShelterServiceImpl implements ShelterService {
 //                case "Обустройство для взрослой собаки" -> arrangementAdultSelectionDog(messageId, chatId);
 //                case "Обустройство для ограниченного" -> arrangementLimitedSelection(messageId, chatId);
 //                case "Cписок причин" -> listReasonsSelection(messageId, chatId);
+
                 }
             }
 
@@ -220,6 +234,12 @@ public class ShelterServiceImpl implements ShelterService {
     public void sendMessage(Long chatId, String messageText) {
         logger.info("Был вызван метод для отправки сообщения", chatId, messageText);
         SendMessage sendMessage = new SendMessage(chatId, messageText);
+        telegramBot.execute(sendMessage);
+    }
+    @Override
+    public void sendMessageByUserId(Update update, Long userID, String messageText) {
+        logger.info("Был вызван метод для отправки сообщения по id", userID, messageText);
+        SendMessage sendMessage = new SendMessage(update.callbackQuery().message().chat().id(), messageText);
         telegramBot.execute(sendMessage);
     }
 

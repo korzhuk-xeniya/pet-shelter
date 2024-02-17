@@ -1,6 +1,7 @@
 package pro.sky.telegrambot.service;
 
 import pro.sky.telegrambot.model.Animal;
+import pro.sky.telegrambot.model.User;
 
 import java.util.List;
 
@@ -14,4 +15,10 @@ public interface AnimalService {
     void delete(long id);
 
     List<Animal> allAnimals();
+
+
+
+//    void updateUserId(User user, Animal animal);
+
+    void updateUserId(User user, long animalId);
 }

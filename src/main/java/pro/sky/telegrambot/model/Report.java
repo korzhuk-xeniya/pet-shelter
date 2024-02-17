@@ -35,5 +35,5 @@ public class Report {
 
     @ManyToOne
     @JoinColumn(name = "user_id")
-    private User user;
+    private long userId;
 }

@@ -6,6 +6,8 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import javax.persistence.*;
+import java.util.Objects;
+
 @Getter
 @Setter
 @AllArgsConstructor
@@ -36,7 +38,7 @@ public class Animal {
     private final String petType;
     @OneToOne
     @JoinColumn(name = "user_id")
-    private User user;
+    private long userId;
 
     public Animal(long ageMonth, String nameOfAnimal, String photoLink, String gender, String petType) {
         this.ageMonth = ageMonth;
@@ -64,12 +66,14 @@ public class Animal {
         petType = null;
     }
 
-    public User getUser() {
-        return user;
+
+
+    public long getId() {
+        return id;
     }
 
-    public void setUser(User user) {
-        this.user = user;
+    public void setId(long id) {
+        this.id = id;
     }
 
     public long getAgeMonth() {
@@ -92,18 +96,38 @@ public class Animal {
         return petType;
     }
 
+    public long getUserId() {
+        return userId;
+    }
+
+    public void setUserId(long userId) {
+        this.userId = userId;
+    }
+
     @Override
     public String toString() {
         return "Animal{" +
-                "user=" + user +
+                "id=" + id +
                 ", ageMonth=" + ageMonth +
-                ", name='" + nameOfAnimal + '\'' +
+                ", nameOfAnimal='" + nameOfAnimal + '\'' +
                 ", photoLink='" + photoLink + '\'' +
                 ", gender='" + gender + '\'' +
                 ", petType='" + petType + '\'' +
+                ", userId=" + userId +
                 '}';
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Animal animal = (Animal) o;
+        return id == animal.id && ageMonth == animal.ageMonth && userId == animal.userId && Objects.equals(nameOfAnimal, animal.nameOfAnimal) && Objects.equals(photoLink, animal.photoLink) && Objects.equals(gender, animal.gender) && Objects.equals(petType, animal.petType);
+    }
 
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, ageMonth, nameOfAnimal, photoLink, gender, petType, userId);
+    }
 }
 
