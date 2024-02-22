@@ -1,13 +1,20 @@
 package pro.sky.telegrambot.service;
 
 import com.pengrad.telegrambot.TelegramBot;
+import com.pengrad.telegrambot.model.File;
+import com.pengrad.telegrambot.model.Message;
+import com.pengrad.telegrambot.model.PhotoSize;
+
 import com.pengrad.telegrambot.model.Update;
 import com.pengrad.telegrambot.model.request.InlineKeyboardMarkup;
 import com.pengrad.telegrambot.request.EditMessageText;
+import com.pengrad.telegrambot.request.GetFile;
 import com.pengrad.telegrambot.request.SendMessage;
+import com.pengrad.telegrambot.request.SendPhoto;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+
 import pro.sky.telegrambot.Buttons;
 import pro.sky.telegrambot.model.Animal;
 import pro.sky.telegrambot.model.Volunteer;
@@ -15,10 +22,21 @@ import pro.sky.telegrambot.repository.ShelterRepository;
 import pro.sky.telegrambot.repository.UserRepository;
 import pro.sky.telegrambot.repository.VolunteerRepository;
 
+import java.io.*;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import static java.nio.file.StandardOpenOption.CREATE_NEW;
+
+//import static jdk.javadoc.internal.tool.Main.execute;
 
 
 @Service
@@ -33,9 +51,15 @@ public class ShelterServiceImpl implements ShelterService {
     private final VolunteerService volunteerService;
     private final AnimalService animalService;
     private final Logger logger = LoggerFactory.getLogger(ShelterServiceImpl.class);
+    private boolean photoCheckButton = false; // флаг на проверку нажатия кнопки
+    private boolean reportCheckButton = false; // флаг на проверку нажатия кнопки
+    private String namePhotoId;
+    private final ReportService reportService;
 
     //    private boolean isCorrectNumber = false;
     private static final Pattern MESSAGE_PATTERN = Pattern.compile("^(\\+7)([0-9]{10})$");
+    private String filePath;
+    int sendMessageReport;
 //   @Value(value = "${telegram.bot.admins}")
 //    private List<String> admins;
 
@@ -43,7 +67,7 @@ public class ShelterServiceImpl implements ShelterService {
                               Animal animal, VolunteerRepository volunteerRepository,
                               Buttons buttons, UserService userService,
                               VolunteerService volunteerService, UserRepository userRepository,
-                              AnimalService animalService) {
+                              AnimalService animalService, ReportService reportService) {
         this.telegramBot = telegramBot;
         this.repository = repository;
         this.animal = animal;
@@ -56,21 +80,22 @@ public class ShelterServiceImpl implements ShelterService {
         this.userRepository = userRepository;
         this.animalService = animalService;
 //
+        this.reportService = reportService;
     }
 
 
     @Override
-    public void process(Update update) {
+    public void process(Update update) throws IOException {
         List<String> adminsVolunteers = new ArrayList<>();
         adminsVolunteers.add("xeny_sk");
         adminsVolunteers.add("d_prudnikov");
 
 //        sendMessage(update.message().chat().id(), "для начала работы, отправь /start");
-        if (update.message() == null && update.callbackQuery() == null) {
+        if (update.message() == null && update.callbackQuery() == null && update.message().photo() == null) {
             logger.info("пользователь отправил пустое сообщение");
             return;
         }
-//
+
         if (update.callbackQuery() == null) {
             Long chatId = update.message().chat().id();
             String message = update.message().text();
@@ -78,31 +103,12 @@ public class ShelterServiceImpl implements ShelterService {
             String userName = update.message().from().firstName();
             String userLastName = update.message().from().lastName();
             int messageId = update.message().messageId();
-//            Pattern pattern = Pattern.compile("^(\\+7)([0-9]{10})$");
             Matcher matcher = MESSAGE_PATTERN.matcher(message);
             if (update.message() != null && matcher.find()) {
                 userRepository.updateNumber(update.message().chat().id().intValue(), update.message().text());
                 userService.saveUser(update, false);
                 sendMenuButton(chatId, "Номер записан, Вам обязательно позвонят!");
             }
-
-
-//            } else if
-//            (update.message() != null && !update.message().text().equals("/start") && !matcher.find()) {
-//                logger.info("пользователь отправил  сообщение  с неопределенным содержанием");
-//                sendMessage(chatId, "Содержание не определено.");
-//                return;
-//
-//            }
-//            else
-//            if  ((!update.message().text().equals("/start")) && (!matcher.find())) {
-//                logger.info("пользователь отправил  сообщение  с неопределенным содержанием");
-//
-//
-//                sendMessage(chatId, "для начала работы, отправь /start");
-//                return;
-//            }
-//
 
             if (update.message().text().equals("/start")) {
                 logger.info("пользователь отправил /start");
@@ -118,6 +124,10 @@ public class ShelterServiceImpl implements ShelterService {
                     userService.saveUser(update, false);
                 }
             }
+//            if (update.message().photo() != null && update.message().caption() != null) {
+//                logger.info("пользователь отправил фото с заголовком");
+//                reportService.savePhoto(update, update.message());
+//            }
             List<Animal> animalList1 = new ArrayList<Animal>(animalService.allAnimals());
             for (Animal pet : animalList1) {
                 if (update.message().text().equals(pet.getNameOfAnimal().toString())) {
@@ -169,68 +179,78 @@ public class ShelterServiceImpl implements ShelterService {
 
                         }
                     }
-                    case "Взять животное" -> {
-                        changeMessage(messageId, chatId, "Отправьте кличку животного.", buttons.buttonMenu());
+                    case "Взять животное" ->
+                            changeMessage(messageId, chatId, "Отправьте кличку животного.", buttons.buttonMenu());
 
-
-//                        callAVolunteerForConfirmationOfSelection(update);
-////                        changeMessage(messageId, chatId,
-////                                ",
-////                                buttons.buttonMenu());
-//                        userService.saveUser(update, true);
-                    }
-
-
-//
                     case "Оставить телефон для связи" -> {
                         changeMessage(messageId, chatId,
                                 "Введите свой номер телефона в формате +71112223344", buttons.buttonMenu());
-//
                     }
-//case "Прислать отчет о питомце" -> petReportSelection(messageId, chatId);
-//
-////Блок "Информация о приюте"
-////
-////                case "Информация о приюте для собак" -> aboutDogShelterSelection(messageId, chatId);
-////                case "Расписание работы приюта для собак" -> dogShelterWorkingHoursSelection(messageId, chatId);
-////                case "Контакты охраны приюта для собак" -> dogShelterSecurityContactSelection(messageId, chatId);
-////                case "Общие правила поведения" -> safetyRecommendationsSelection(messageId, chatId);
-//
-// блок “Прислать отчет о питомце”
-//                case "Форма ежедневного отчета" -> {
-//                    takeDailyReportFormPhoto(chatId);
-//                    photoCheckButton = true; // Устанавливаем флаг в true после нажатия кнопки
-//                }
-//
-//
-//
-//                //блок “Как взять животное из приюта”
-//                case "Правила знакомства" -> datingRulesSelection(messageId, chatId);
-//                case "Список документов" -> documentsSelection(messageId, chatId);
-//                case "Рекомендации по транспортировке" -> transportationSelection(messageId, chatId);
-//
-//                case "Обустройство щенка" -> puppyArrangementSelection(messageId, chatId);
-//
-//                case "Обустройство для взрослой собаки" -> arrangementAdultSelectionDog(messageId, chatId);
-//                case "Обустройство для ограниченного" -> arrangementLimitedSelection(messageId, chatId);
-//                case "Cписок причин" -> listReasonsSelection(messageId, chatId);
+                    //блок “Прислать отчет о питомце”
+                    case "Форма ежедневного отчета" -> {
+                        takeDailyReportFormPhoto(chatId);
+                        photoCheckButton = true; // Устанавливаем флаг в true после нажатия кнопки
+                    }
+                    //блок Волонтера
+                    case "Отчеты" -> {
+                        volunteerService.reviewListOfReports(update.callbackQuery().message().chat().id());
+                        sendImageFromFileId(String.valueOf(update.callbackQuery().message().chat().id()));
+                    }
+                    case "Отчет сдан" -> {
+                        reportSubmitted(update);
+                        volunteerService.reviewListOfReports(update.callbackQuery().message().chat().id());
+                    }
+                    case "Прислать отчет о питомце" -> petReportSelection(messageId, chatId);
+                }
 
+//
+
+                if (photoCheckButton) { // Проверяем флаг перед выполнением checkDailyReport(update) и проверяеем, что пользователь прислал фото
+                    if (!(update.message() == null)) {
+                        PhotoSize photoSize = getPhoto(update);
+                        File file = telegramBot.execute(new GetFile(photoSize.fileId())).file();
+                        savePhotoToLocalFolder(file, update);
+                        checkDailyReportPhoto(update);
+                        photoCheckButton = false;
+                        reportCheckButton = true;
+                    }
+                }
+                if (reportCheckButton) { // Проверяем флаг перед выполнением checkDailyReport(update)
+                    // и проверяеем, что пользователь прислал текст отчета
+                    if (!(update.message() == null)) {
+                        checkDailyReportMessage(update);
+                        reportCheckButton = false;
+                    }
                 }
             }
-
         }
-//        Pattern pattern = Pattern.compile("^(\\+7)([0-9]{10})$");
-//        if (update.message() != null && isCorrectNumber && pattern.matcher(update.message().text()).matches()) {
-//            userService.saveUser(update, false);
-//            userRepository.updateNumber(update.message().chat().id().intValue(), update.message().text());
-//            changeMessage(messageId, chatId, "Добро пожаловать в наш приют для собак!",
-//                    buttons.buttonsInformationAboutShelter());
-//
-//            executeSendMessage(new SendMessage(update.getMessage().getChatId().toString(), "номер записан вам обязательно позвонят"));
-//            isCorrectNumber = false;
-//        } else if (update.message() != null && isCorrectNumber && !pattern.matcher(update.message().text()).matches()) {
-//            executeSendMessage(new SendMessage(update.getMessage().getChatId().toString(), "не правильно набран номер повторите ещё раз"));
-//        }
+
+    }
+
+
+        //Если отчет сдан
+        private void reportSubmitted(Update update) {
+            changeMessage(update.callbackQuery().message().chat().id(), "Отчет сдан");
+            System.out.println(sendMessageReport);
+            volunteerService.reportSubmitted((long) sendMessageReport);
+        }
+
+
+
+    /**
+     * @param chatId запрос у пользователя "Прислать фото питомца"
+     */
+    private void takeDailyReportFormPhoto(Long chatId) {
+        sendMessage(chatId, "Пришлите фото питомца");
+
+    }
+    public void sendImageFromFileId(String chatId) {
+
+        SendPhoto sendPhotoRequest = new SendPhoto(chatId,
+                new InputFile("AgACAgIAAxkBAAIFfGTgeJPke7lK6kcjJVQutOAjH4S6AAIPzDEb0UQAAUtYMYlzKbeYagEAAwIAA3gAAzAE"));
+
+        telegramBot.execute(sendPhotoRequest);
+
     }
 
     @Override
@@ -270,6 +290,18 @@ public class ShelterServiceImpl implements ShelterService {
     }
 
     /**
+     * @param chatId
+     * @param messageText метод для отправки кнопок Волонтера для работы с отчетами
+     */
+    @Override
+    public void sendButtonOfVolunteerForReports(Long chatId, String messageText) {
+        logger.info("Был вызван метод для отправки кнопок Выбора животного", chatId, messageText);
+        SendMessage sendMessage = new SendMessage(chatId, messageText);
+        sendMessage.replyMarkup(buttons.buttonsOfVolunteerForReports());
+        telegramBot.execute(sendMessage);
+    }
+
+    /**
      * метод для отправки кнопок "Выбрать животное"
      */
     @Override
@@ -292,11 +324,11 @@ public class ShelterServiceImpl implements ShelterService {
     }
 
     /**
-     * метод для изменения сообщения
+     * метод для изменения сообщения с кнопками
      */
     private void changeMessage(int messageId, long chatIdInButton, String messageText, InlineKeyboardMarkup
             keyboardMarkup) {
-        logger.info("Был вызван метод для изменения сообщения", messageId, chatIdInButton, messageText, keyboardMarkup);
+        logger.info("Был вызван метод для изменения сообщения с кнопками", messageId, chatIdInButton, messageText, keyboardMarkup);
         EditMessageText editMessageText = new EditMessageText(chatIdInButton, messageId, messageText);
 
         editMessageText.replyMarkup(keyboardMarkup);
@@ -305,6 +337,18 @@ public class ShelterServiceImpl implements ShelterService {
 
     }
 
+    /**
+     * @param chatIdInButton
+     * @param messageText
+     * метод для изменения сообщения
+     */
+    @Override
+    public void changeMessage(long chatIdInButton, String messageText) {
+        logger.info("Был вызван метод для изменения сообщения ", chatIdInButton, messageText);
+//        EditMessageText editMessageText = new EditMessageText(chatIdInButton,, messageText);
+                SendMessage sendMessage = new SendMessage(chatIdInButton, messageText);
+        telegramBot.execute(sendMessage);
+    }
 
     /**
      * Провека ввода /start
@@ -336,12 +380,132 @@ public class ShelterServiceImpl implements ShelterService {
         for (Volunteer volunteer : volunteerList) {
             String user = update.message().from().username();
             SendMessage sendMessage = new SendMessage(volunteer.getChatId(),
-                    "Пользователь: @" + user + " хочет усыновить животное " + pet.getNameOfAnimal() + " id: "+
-                    pet.getId());
+                    "Пользователь: @" + user + " хочет усыновить животное " + pet.getNameOfAnimal() + " id: " +
+                            pet.getId());
             telegramBot.execute(sendMessage);
         }
     }
 
+    /**
+     * Извлекает из update список объектов PhotoSize, которые представляют разный размер фотографий
+     * Через стрим ищет самую большую фотографию и возвращает её.
+     */
+    public PhotoSize getPhoto(Update update) {
+        if (!(update.message() == null) && !(update.message().photo() == null)) {
+            List<PhotoSize> photos = Arrays.stream(update.message().photo()).toList();
+            return photos.stream().max(Comparator.comparing(PhotoSize::fileSize)).orElse(null);
+
+
+        }
+        return null;
+    }
+
+    /**
+     * Получаеем объект File содержащий информацию о файле по его индефикатору.
+     */
+    private File downloadPhoto(Message message) {
+        GetFile getFile = new GetFile(message.photo()[0].fileId());
+
+        return telegramBot.execute(getFile).file();
+
+    }
+//    private void savePhoto(Update update, Message message) {
+//
+//        GetFile getFileRequest = new GetFile(message.photo()[0].fileId());
+//
+//        GetFileResponse getFileResponse = telegramBot.execute(getFileRequest);
+//
+//        try {
+//
+//            File file = getFileResponse.file();
+//
+//            byte[] fileContent = telegramBot.getFileContent(file);
+//
+//            reportService.uploadPicture(update.message().chat().id(), fileContent, file, update.message().caption());
+//
+//            telegramBot.execute(new SendMessage(update.message().chat().id(), "Отчет принят"));
+//        } catch (IOException e) {
+//            logger.error("Что-то пошло не так");
+//            throw new RuntimeException(e);
+//        }
+//
+//    }
+
+
+    /**
+     * Скачиваем файл, генерируем уникальное имя для него,
+     * перемещаем в целевую директорию и возвращаем путь к сохраненному файлу
+     */
+    private Path savePhotoToLocalFolder(File file, Update update) throws IOException {
+//        PhotoSize photoSize = getPhoto(update);
+//        File photo = telegramBot.execute(new GetFile(photoSize.fileId())).file();
+//        String filePath = photo.filePath();
+//
+//        // Генерируем уникальное имя файла с сохранением расширения
+//        namePhotoId = photoSize.fileId() + "." + "jpg";
+//        Path targetPath = Path.of("src/main/resources/pictures", namePhotoId);
+//        userService.saveUser(update, true);
+//        reportService.saveReportPhotoId(update, namePhotoId);
+//        Files.move(Path.of(filePath), targetPath, StandardCopyOption.REPLACE_EXISTING);
+//        return targetPath;
+//    }
+//__________________________________________________________________
+//        PhotoSize photoSize = getPhoto(update);
+//        String filePath = file.filePath();
+//        java.io.File downloadedFile;
+//
+//            downloadedFile = download(update.message());
+//
+//        // Генерируем уникальное имя файла с сохранением расширения
+//        namePhotoId = photoSize.fileId() + "." + "jpg";
+//        Path targetPath = Path.of("src/main/resources/pictures", namePhotoId);
+//        userService.saveUser(update, true);
+//        reportService.saveReportPhotoId(update, namePhotoId);
+//
+//        Files.move(downloadedFile.toPath(), targetPath, StandardCopyOption.REPLACE_EXISTING);
+//        _______________________________________________________________
+        PhotoSize photoSize = getPhoto(update);
+        namePhotoId = photoSize.fileId() + "." + "jpg";
+        String filePath = file.filePath();
+        logger.info("Был вызван метод для загрузки аватара студента в файл ", file, update);
+        Path targetPath = Path.of("src/main/resources/pictures", namePhotoId);
+        Files.createDirectories(filePath.getParent());
+        Files.deleteIfExists(targetPath);
+
+        try (InputStream is = downloadPhoto(update.message()).getInputStream();
+        OutputStream os = Files.newOutputStream(targetPathh, CREATE_NEW);
+             BufferedInputStream bis = new BufferedInputStream(is, 1024);
+             BufferedOutputStream bos = new BufferedOutputStream(os, 1024);
+        ) {
+            bis.transferTo(bos);
+        }
+        return targetPath;
+    }
+
+    /**
+     * @param update
+     * проверка что пользователь прислал текстовую часть отчета и сохроняем в БД
+     */
+
+    private void checkDailyReportMessage(Update update) {
+        long chatId = update.message().chat().id();
+        reportService.dailyReportCheckMessage(chatId, update, namePhotoId);
+
+    }
+
+    /**
+     * @param update
+     * проверка что пользователь прислал фото для отчета и сохроняем в БД
+     */
+    private void checkDailyReportPhoto(Update update) {
+        long chatId = update.message().chat().id();
+        reportService.dailyReportCheckPhoto(chatId, update);
+    }
+    //метод кнопки "Прислать отчет о питомце"
+    private void petReportSelection(int messageId, long chatId) {
+
+        changeMessage(messageId, chatId, "Выберите одну из кнопок", buttons.buttonsOfOwner());
+    }
 
 }
 

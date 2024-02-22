@@ -15,7 +15,7 @@ import java.util.Optional;
 @Service
 public class AnimalServiceImpl implements AnimalService {
 
-    private final Logger logger = LoggerFactory.getLogger(UserServiceImpl.class);
+    private final Logger logger = LoggerFactory.getLogger(AnimalServiceImpl.class);
     private final AnimalRepository animalRepository;
     private final UserRepository userRepository;
     private final UserService userService;
@@ -81,12 +81,6 @@ public class AnimalServiceImpl implements AnimalService {
         return animalRepository.findAll();
     }
 
-//    @Override
-//    public void updateUserId(User user, Animal animal) {
-////        new Animal();
-////        Animal animal = (animalRepository.findById(animalId).orElse(null));
-//        animal.setUser(user);
-//    }
     @Override
     /**
      * Поиск пользователя по chatId, если он есть то добавляем к животному

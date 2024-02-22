@@ -29,4 +29,25 @@ public interface VolunteerService {
      * Поиск волонтера по chatId, если он есть то обновляем, если нет, создается новый волонтер
      */
     void saveVolunteer (Update update);
+
+    /**
+            * Получаем непроверенный отчет из всех отчетов
+     *
+             * @return возвращает первый непроверенный отчет и кнопки действия с отчетом
+     */
+    void reviewListOfReports(Long chatIdOfVolunteer);
+
+    /**
+         * Обновляем в БД отчет и ставим, что отчет сдан
+         */
+    void reportSubmitted(Long idReport);
+
+    /**
+     * Позволяет распарсить SendMessage из метода reviewListOfReports что-бы достать ID репорта
+     * с которым будем работать.
+     *
+     * @param reportString получаем строку SendMessage
+     * @return вовзращает ID отчета
+     */
+    int parseReportNumber(String reportString);
 }

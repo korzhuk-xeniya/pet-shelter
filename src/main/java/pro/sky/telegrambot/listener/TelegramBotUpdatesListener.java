@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import pro.sky.telegrambot.service.ShelterService;
 
 import javax.annotation.PostConstruct;
+import java.io.IOException;
 import java.util.List;
 
 @Service
@@ -35,7 +36,11 @@ public class TelegramBotUpdatesListener implements UpdatesListener {
     public int process(List<Update> updates) {
         updates.forEach(update -> {
             logger.info("Processing update: {}", updates);
-            shelterService.process(update);
+            try {
+                shelterService.process(update);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
         });
         return UpdatesListener.CONFIRMED_UPDATES_ALL;
     }

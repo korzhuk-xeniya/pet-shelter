@@ -18,9 +18,6 @@ public interface AnimalService {
 
     List<Animal> allAnimals();
 
-//    void updateUserId(long chatId, Animal animal);
-
-//    void updateUserId(User user, Animal animal);
 
     /**
      * Поиск пользователя по chatId, если он есть то обновляем dateTimeToTook, если нет, создается новый пользователь
@@ -28,15 +25,4 @@ public interface AnimalService {
     void saveUserIdInAnimal(Update update, Animal animal);
 
 
-//    void updateUserId(User user, Animal animal);
-
-//    void updateUserId(User user, long animalId);
-
-//    void updateUserId(Optional<User> user, long animalId);
-
-//    void updateUserId(User user, long animalId);
-
-//    void updateUserId(User user, Animal animal);
-
-//    void updateUserId(long userId, Animal animal);
 }

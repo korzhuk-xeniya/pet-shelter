@@ -16,7 +16,7 @@ CREATE TABLE user_tg
     took_a_pet        BOOLEAN,
     date_time_to_took TIMESTAMP,
     chat_id           bigint not null,
-    telephone_number  VARCHAR(50)
+    number  VARCHAR(50)
 );
 
 CREATE TABLE report_tg
@@ -25,9 +25,8 @@ CREATE TABLE report_tg
     date_added         TIMESTAMP,
     general_well_being TEXT,
     photo_name         TEXT,
-    check_report       boolean,
-    user_id            BIGINT references user_tg (id) on delete set null
-
+    user_id            BIGINT references user_tg (id) on delete set null,
+    check_report       bool
 );
 
 CREATE TABLE volunteers

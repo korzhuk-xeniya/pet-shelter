@@ -2,7 +2,6 @@ package pro.sky.telegrambot.service;
 
 import com.pengrad.telegrambot.model.Update;
 import pro.sky.telegrambot.model.User;
-import pro.sky.telegrambot.repository.UserRepository;
 
 import java.util.Optional;
 

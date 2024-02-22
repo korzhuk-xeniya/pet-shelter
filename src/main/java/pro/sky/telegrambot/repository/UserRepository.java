@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.transaction.annotation.Transactional;
 import pro.sky.telegrambot.model.User;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 public interface UserRepository extends JpaRepository<User, Long> {
@@ -16,6 +17,8 @@ public interface UserRepository extends JpaRepository<User, Long> {
     @Modifying
     @Query("UPDATE User u set u.number = ?2 where u.chatId = ?1")
     int updateNumber(long chatId, String num);
+ Optional<User> findByDateTimeToTookBefore(LocalDateTime dateTimeToTook);
 
+ User findUserByChatId(int chatId);
 }
 
