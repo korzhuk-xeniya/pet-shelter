@@ -80,7 +80,8 @@
 			<artifactId>java-telegram-bot-api</artifactId>
 			<version>6.2.0</version>
 		</dependency>
-	</dependencies>
+
+    </dependencies>
 
 	<build>
 

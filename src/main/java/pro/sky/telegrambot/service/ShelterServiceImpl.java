@@ -13,6 +13,7 @@ import com.pengrad.telegrambot.request.SendMessage;
 import com.pengrad.telegrambot.request.SendPhoto;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import org.springframework.stereotype.Service;
 
 import pro.sky.telegrambot.Buttons;
@@ -35,6 +36,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static java.nio.file.StandardOpenOption.CREATE_NEW;
+
+
 
 //import static jdk.javadoc.internal.tool.Main.execute;
 
@@ -194,7 +197,7 @@ public class ShelterServiceImpl implements ShelterService {
                     //блок Волонтера
                     case "Отчеты" -> {
                         volunteerService.reviewListOfReports(update.callbackQuery().message().chat().id());
-                        sendImageFromFileId(String.valueOf(update.callbackQuery().message().chat().id()));
+//                        sendImageFromFileId(String.valueOf(update.callbackQuery().message().chat().id()));
                     }
                     case "Отчет сдан" -> {
                         reportSubmitted(update);
@@ -208,7 +211,8 @@ public class ShelterServiceImpl implements ShelterService {
                 if (photoCheckButton) { // Проверяем флаг перед выполнением checkDailyReport(update) и проверяеем, что пользователь прислал фото
                     if (!(update.message() == null)) {
                         PhotoSize photoSize = getPhoto(update);
-                        File file = telegramBot.execute(new GetFile(photoSize.fileId())).file();
+                        File file = downloadPhoto(photoSize.fileId());
+
                         savePhotoToLocalFolder(file, update);
                         checkDailyReportPhoto(update);
                         photoCheckButton = false;
@@ -228,13 +232,12 @@ public class ShelterServiceImpl implements ShelterService {
     }
 
 
-        //Если отчет сдан
-        private void reportSubmitted(Update update) {
-            changeMessage(update.callbackQuery().message().chat().id(), "Отчет сдан");
-            System.out.println(sendMessageReport);
-            volunteerService.reportSubmitted((long) sendMessageReport);
-        }
-
+    //Если отчет сдан
+    private void reportSubmitted(Update update) {
+        changeMessage(update.callbackQuery().message().chat().id(), "Отчет сдан");
+        System.out.println(sendMessageReport);
+        volunteerService.reportSubmitted((long) sendMessageReport);
+    }
 
 
     /**
@@ -244,14 +247,15 @@ public class ShelterServiceImpl implements ShelterService {
         sendMessage(chatId, "Пришлите фото питомца");
 
     }
-    public void sendImageFromFileId(String chatId) {
 
-        SendPhoto sendPhotoRequest = new SendPhoto(chatId,
-                new InputFile("AgACAgIAAxkBAAIFfGTgeJPke7lK6kcjJVQutOAjH4S6AAIPzDEb0UQAAUtYMYlzKbeYagEAAwIAA3gAAzAE"));
-
-        telegramBot.execute(sendPhotoRequest);
-
-    }
+//    public void sendImageFromFileId(String chatId) {
+//
+//        SendPhoto sendPhotoRequest = new SendPhoto(chatId,
+//                new InputFile("AgACAgIAAxkBAAIFfGTgeJPke7lK6kcjJVQutOAjH4S6AAIPzDEb0UQAAUtYMYlzKbeYagEAAwIAA3gAAzAE"));
+//
+//        telegramBot.execute(sendPhotoRequest);
+//
+//    }
 
     @Override
     public void sendMessage(Long chatId, String messageText) {
@@ -339,14 +343,13 @@ public class ShelterServiceImpl implements ShelterService {
 
     /**
      * @param chatIdInButton
-     * @param messageText
-     * метод для изменения сообщения
+     * @param messageText    метод для изменения сообщения
      */
     @Override
     public void changeMessage(long chatIdInButton, String messageText) {
         logger.info("Был вызван метод для изменения сообщения ", chatIdInButton, messageText);
 //        EditMessageText editMessageText = new EditMessageText(chatIdInButton,, messageText);
-                SendMessage sendMessage = new SendMessage(chatIdInButton, messageText);
+        SendMessage sendMessage = new SendMessage(chatIdInButton, messageText);
         telegramBot.execute(sendMessage);
     }
 
@@ -403,10 +406,10 @@ public class ShelterServiceImpl implements ShelterService {
     /**
      * Получаеем объект File содержащий информацию о файле по его индефикатору.
      */
-    private File downloadPhoto(Message message) {
-        GetFile getFile = new GetFile(message.photo()[0].fileId());
-
+    private File downloadPhoto(String fileId) {
+        GetFile getFile = new GetFile(fileId);
         return telegramBot.execute(getFile).file();
+
 
     }
 //    private void savePhoto(Update update, Message message) {
@@ -437,24 +440,24 @@ public class ShelterServiceImpl implements ShelterService {
      * перемещаем в целевую директорию и возвращаем путь к сохраненному файлу
      */
     private Path savePhotoToLocalFolder(File file, Update update) throws IOException {
+        PhotoSize photoSize = getPhoto(update);
+        File photo = telegramBot.execute(new GetFile(photoSize.fileId())).file();
+        String filePath = photo.filePath();
+
+        // Генерируем уникальное имя файла с сохранением расширения
+        namePhotoId = photoSize.fileId() + "." + "jpg";
+        Path targetPath = Path.of("src/main/resources/pictures", namePhotoId);
+        userService.saveUser(update, true);
+        reportService.saveReportPhotoId(update, namePhotoId);
+        Files.move(Path.of(filePath), targetPath, StandardCopyOption.REPLACE_EXISTING);
+        return targetPath;
+    }
+//        __________________________________________________________________
 //        PhotoSize photoSize = getPhoto(update);
-//        File photo = telegramBot.execute(new GetFile(photoSize.fileId())).file();
-//        String filePath = photo.filePath();
-//
-//        // Генерируем уникальное имя файла с сохранением расширения
-//        namePhotoId = photoSize.fileId() + "." + "jpg";
-//        Path targetPath = Path.of("src/main/resources/pictures", namePhotoId);
-//        userService.saveUser(update, true);
-//        reportService.saveReportPhotoId(update, namePhotoId);
-//        Files.move(Path.of(filePath), targetPath, StandardCopyOption.REPLACE_EXISTING);
-//        return targetPath;
-//    }
-//__________________________________________________________________
-//        PhotoSize photoSize = getPhoto(update);
-//        String filePath = file.filePath();
+//        String filePath = file. ();
 //        java.io.File downloadedFile;
 //
-//            downloadedFile = download(update.message());
+//        downloadedFile = download(update.message());
 //
 //        // Генерируем уникальное имя файла с сохранением расширения
 //        namePhotoId = photoSize.fileId() + "." + "jpg";
@@ -464,27 +467,26 @@ public class ShelterServiceImpl implements ShelterService {
 //
 //        Files.move(downloadedFile.toPath(), targetPath, StandardCopyOption.REPLACE_EXISTING);
 //        _______________________________________________________________
-        PhotoSize photoSize = getPhoto(update);
-        namePhotoId = photoSize.fileId() + "." + "jpg";
-        String filePath = file.filePath();
-        logger.info("Был вызван метод для загрузки аватара студента в файл ", file, update);
-        Path targetPath = Path.of("src/main/resources/pictures", namePhotoId);
-        Files.createDirectories(filePath.getParent());
-        Files.deleteIfExists(targetPath);
-
-        try (InputStream is = downloadPhoto(update.message()).getInputStream();
-        OutputStream os = Files.newOutputStream(targetPathh, CREATE_NEW);
-             BufferedInputStream bis = new BufferedInputStream(is, 1024);
-             BufferedOutputStream bos = new BufferedOutputStream(os, 1024);
-        ) {
-            bis.transferTo(bos);
-        }
-        return targetPath;
-    }
+//        PhotoSize photoSize = getPhoto(update);
+//        namePhotoId = photoSize.fileId() + "." + "jpg";
+//        String filePath = file.filePath();
+//        logger.info("Был вызван метод для загрузки аватара студента в файл ", file, update);
+//        Path targetPath = Path.of("src/main/resources/pictures", namePhotoId);
+//        Files.createDirectories(filePath.getParent());
+//        Files.deleteIfExists(targetPath);
+//
+//        try (InputStream is = downloadPhoto(update.message()).getInputStream();
+//        OutputStream os = Files.newOutputStream(targetPathh, CREATE_NEW);
+//             BufferedInputStream bis = new BufferedInputStream(is, 1024);
+//             BufferedOutputStream bos = new BufferedOutputStream(os, 1024);
+//        ) {
+//            bis.transferTo(bos);
+//        }
+//        return targetPath;
+//    }
 
     /**
-     * @param update
-     * проверка что пользователь прислал текстовую часть отчета и сохроняем в БД
+     * @param update проверка что пользователь прислал текстовую часть отчета и сохроняем в БД
      */
 
     private void checkDailyReportMessage(Update update) {
@@ -494,13 +496,13 @@ public class ShelterServiceImpl implements ShelterService {
     }
 
     /**
-     * @param update
-     * проверка что пользователь прислал фото для отчета и сохроняем в БД
+     * @param update проверка что пользователь прислал фото для отчета и сохроняем в БД
      */
     private void checkDailyReportPhoto(Update update) {
         long chatId = update.message().chat().id();
         reportService.dailyReportCheckPhoto(chatId, update);
     }
+
     //метод кнопки "Прислать отчет о питомце"
     private void petReportSelection(int messageId, long chatId) {
 

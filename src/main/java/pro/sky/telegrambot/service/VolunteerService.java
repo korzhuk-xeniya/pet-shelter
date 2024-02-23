@@ -48,6 +48,14 @@ public interface VolunteerService {
      *
      * @param reportString получаем строку SendMessage
      * @return вовзращает ID отчета
+     */ int parseReportNumber(String reportString);
+
+    /**
+     * Позволяет распарсить SendMessage из метода reviewListOfReports что-бы достать ID репорта
+     * с которым будем работать.
+     *
+     * @param reportString получаем строку SendMessage
+     * @return вовзращает ID отчета
      */
-    int parseReportNumber(String reportString);
+//    int parseReportNumber(String reportString);
 }
